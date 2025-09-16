@@ -30,6 +30,21 @@ Toujours depuis la racine du repo:
 python src/main.py
 ```
 
+## Commandes
+- Global:
+  - `ENTER`: passer les écrans d'intro/transition
+  - `ESC`: quitter
+  - `R`: recommencer lors d'un échec
+
+- Niveau 1 — Mini-jeu 1 (Messager coureur):
+  - `ESPACE` ou `Flèche Haut` ou `W`: sauter
+  - Objectif: éviter les obstacles et atteindre le château (barre de progression en haut).
+
+- Niveau 1 — Mini-jeu 2 (Défense du prince):
+  - `Flèche Gauche/Droite` ou `A/D`: déplacer le garde en haut
+  - `ESPACE`: déposer une caisse (elle tombe et bloque des flèches)
+  - Objectif: empêcher les flèches d'atteindre le prince pendant le chrono.
+
 ## Dépannage rapide
 - Si `python` n'est pas reconnu, essayez `py -3` ou vérifiez l'installation de Python.
 - Si l'activation échoue, vérifiez le chemin: `source .venv/Scripts/activate` (Bash Windows) ou `.venv\Scripts\activate` dans `cmd.exe`/PowerShell.

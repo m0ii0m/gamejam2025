@@ -35,6 +35,8 @@ class Player:
         self.is_dying = False  # En train de mourir (chute)
         self.death_fall_complete = False  # Chute terminée
         self.is_alive = True  # Vivant ou mort définitivement
+
+        self.can_move = True # Pour désactiver le mouvement si nécessaire
         
         # Chargement des sprites
         self.sprites = {}
@@ -161,12 +163,12 @@ class Player:
         
         # Mouvement horizontal
         dx = 0
-        if keys[pygame.K_LEFT] or keys[pygame.K_q]:
+        if (keys[pygame.K_LEFT] or keys[pygame.K_q]) and self.can_move:
             dx = -self.speed
             self.facing_right = False
             if self.on_ground:
                 self.current_animation = "run"
-        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+        elif (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and self.can_move:
             dx = self.speed
             self.facing_right = True
             if self.on_ground:
@@ -176,7 +178,7 @@ class Player:
                 self.current_animation = "idle"
         
         # Saut
-        if (keys[pygame.K_SPACE] or keys[pygame.K_UP] or keys[pygame.K_z]) and self.on_ground:
+        if (keys[pygame.K_SPACE] or keys[pygame.K_UP] or keys[pygame.K_z]) and self.on_ground and self.can_move:
             self.velocity_y = self.jump_speed
             self.on_ground = False
             self.current_animation = "jump"
@@ -326,3 +328,7 @@ class Player:
                     screen.blit(current_sprite, (x, y))
             else:
                 screen.blit(current_sprite, (x, y))
+
+    def update_can_move(self, can_move):
+        """Met à jour la capacité de mouvement du joueur"""
+        self.can_move = can_move

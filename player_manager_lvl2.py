@@ -1,30 +1,16 @@
 import pygame
 from player import Player
+from QTE_manager import QTEManager
 
-class DeadBody:
-    """Représente le corps d'un joueur mort"""
-    def __init__(self, x, y, player_sprites):
-        self.rect = pygame.Rect(x, y, 75, 75)
-        self.sprites = player_sprites
-        # Utiliser la dernière frame de l'animation de mort
-        self.death_sprite = self.sprites["death"][-1] if "death" in self.sprites else None
-        
-    def draw(self, screen, camera_x, camera_y):
-        """Dessine le corps mort"""
-        if self.death_sprite:
-            screen_x = self.rect.x - camera_x
-            screen_y = self.rect.y - camera_y
-            screen.blit(self.death_sprite, (screen_x, screen_y))
-
-class PlayerManager:
+class PlayerManager2:
     """Gère les joueurs, les morts et les respawns"""
-    def __init__(self, initial_x, initial_y, castle_door_x):
-        self.castle_door_x = castle_door_x
+    def __init__(self, initial_x, initial_y):
         self.initial_spawn_x = initial_x
         self.initial_spawn_y = initial_y
         
         # Joueur actuel
         self.current_player = Player(initial_x, initial_y)
+        self.current_player.update_can_move(False)
         
         # Liste des corps morts
         self.dead_bodies = []
@@ -34,18 +20,20 @@ class PlayerManager:
         self.new_player = None
         self.respawn_timer = 0
         self.respawn_duration = 120  # 2 secondes à 60 FPS
+
+        self.is_in_QTE = False
+        self.QTE_is_over = False
+        self.QTE_manager = QTEManager(initial_x+3, initial_y)
+        self.QTE_manager.start_round()  # Démarrer immédiatement le QTE
         
-    def update(self, keys, collision_tiles, arrow_manager):
+    def update(self, keys, collision_tiles):
         """Met à jour le gestionnaire de joueurs"""
+        self.QTE_manager.update(keys)
         if self.respawning:
             self.handle_respawn(keys, collision_tiles)
         else:
             # Mettre à jour le joueur actuel
             self.current_player.update(keys, collision_tiles)
-            
-            # Vérifier les collisions avec les flèches
-            if arrow_manager != None and arrow_manager.check_collisions(self.current_player.rect):
-                self.current_player.take_arrow_hit()
             
             # Vérifier si le joueur est mort et a fini de tomber
             if self.current_player.is_dead and self.current_player.death_fall_complete:
@@ -80,27 +68,9 @@ class PlayerManager:
         if self.new_player:
             self.new_player.update_animation()
     
-    def start_respawn(self):
-        """Démarre le processus de respawn"""
-        # Ajouter le corps mort à la liste
-        dead_body = DeadBody(
-            self.current_player.rect.x, 
-            self.current_player.rect.y,
-            self.current_player.sprites
-        )
-        self.dead_bodies.append(dead_body)
-        
-        # Commencer le respawn
-        self.respawning = True
-        self.respawn_timer = 0
-    
     def get_current_player(self):
         """Retourne le joueur actuel (celui qu'on contrôle)"""
         return self.current_player
-    
-    def is_at_castle_door(self):
-        """Vérifie si le joueur a atteint la porte du château"""
-        return self.current_player.rect.x >= self.castle_door_x - 100
     
     def draw(self, screen, camera_x, camera_y):
         """Dessine tous les éléments"""
@@ -114,11 +84,12 @@ class PlayerManager:
             player_screen_y = self.current_player.rect.y - camera_y
             self.current_player.draw(screen, player_screen_x, player_screen_y)
         
-        # Dessiner le nouveau joueur pendant le respawn
-        if self.respawning and self.new_player:
-            new_player_screen_x = self.new_player.rect.x - camera_x
-            new_player_screen_y = self.new_player.rect.y - camera_y
-            self.new_player.draw(screen, new_player_screen_x, new_player_screen_y)
+        self.QTE_manager.draw(screen,camera_x,camera_y)
+        # # Dessiner le nouveau joueur pendant le respawn
+        # if self.respawning and self.new_player:
+        #     new_player_screen_x = self.new_player.rect.x - camera_x
+        #     new_player_screen_y = self.new_player.rect.y - camera_y
+        #     self.new_player.draw(screen, new_player_screen_x, new_player_screen_y)
     
     def draw_health_bar(self, screen):
         """Dessine la barre de santé"""

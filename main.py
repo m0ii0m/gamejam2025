@@ -1,4 +1,3 @@
-
 import pygame
 import random
 from game import Game
@@ -29,5 +28,3 @@ while running:
     pygame.display.flip()
 
     clock.tick(IPS)
-    
-

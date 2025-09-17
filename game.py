@@ -6,6 +6,7 @@ from player import Player
 from player_manager import PlayerManager
 from arrow import ArrowManager
 from battlefield_manager import BattlefieldManager
+from throne_scene import ThroneScene
 from levels_utils import draw, get_collision_tiles, draw_foreground_tilemap, draw_background_tilemap
 
 class Game:
@@ -15,10 +16,11 @@ class Game:
         self.screen_height = screen.get_height()
         
         # États du jeu
-        self.game_state = "level1"  # Pour l'instant, on commence directement au niveau 1
+        self.game_state = "throne"
         # self.game_state = "level2" 
         
-        # Initialisation du niveau 1
+        # Initialisation des scènes
+        self.throne = ThroneScene(self.screen)
         self.level1 = Level1(self.screen)
         self.level2 = Level2(self.screen)
         
@@ -51,24 +53,45 @@ class Game:
         
     def state_manager(self):
         """Gère les différents états du jeu"""
-        # Gestion des événements
-        for event in pygame.event.get():
+        # Récupérer tous les événements UNE seule fois et gérer le global (ESC/QUIT)
+        events = pygame.event.get()
+        for event in events:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    sys.exit()
-        
-        if self.game_state == "level1":
-            self.update_level1()
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                pygame.quit()
+                sys.exit()
+
+        if self.game_state == "throne":
+            self.update_throne(events)
+            self.draw_throne()
+        elif self.game_state == "level1":
+            self.update_level1(events)
             self.draw_level1()
         elif self.game_state == "level2":
             self.update_level2()
             self.draw_level2()
+
+    def update_throne(self, events):
+        """Met à jour la cinématique du trône; Enter/Espace pour skip"""
+        # possibilité de skip (Enter/Espace)
+        for event in events:
+            if event.type == pygame.KEYDOWN and event.key in (pygame.K_RETURN, pygame.K_SPACE):
+                self.game_state = "level1"
+                break
+
+        # Update cinematic
+        self.throne.update()
+        # Passage automatique au niveau 1 quand la cinématique est terminée
+        if getattr(self.throne, "cinematic_phase", None) == "done":
+            self.game_state = "level1"
+
+    def draw_throne(self):
+        # La scène gère son propre rendu
+        self.throne.draw(self.screen)
     
-    def update_level1(self):
+    def update_level1(self, events=None):
         """Met à jour le niveau 1"""
         # Récupération des touches pressées
         keys = pygame.key.get_pressed()

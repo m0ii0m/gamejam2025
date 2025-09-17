@@ -23,12 +23,36 @@ class PlayerManager2:
 
         self.is_in_QTE = False
         self.QTE_is_over = False
-        self.QTE_manager = QTEManager(initial_x+3, initial_y)
+        self.QTE_manager = QTEManager(initial_x, initial_y, self.on_qte_end)
         self.QTE_manager.start_round()  # Démarrer immédiatement le QTE
+
+        self.horse_x = 450  # Position du cheval
+        self.horse_trigger_zone_x = self.horse_x - 10  # Position du cheval
+        self.horse_game_triggered = False
+        self.horse_game_over = False
+        self.horse_timer = 120 
+        self.horse_score = 0
+        
+        self.key_e_img = pygame.image.load("assets/Sprites/key/e1.png").convert_alpha()
         
     def update(self, keys, collision_tiles):
         """Met à jour le gestionnaire de joueurs"""
         self.QTE_manager.update(keys)
+
+        if not self.horse_game_triggered and self.current_player.rect.x >= self.horse_trigger_zone_x:
+            self.horse_game_triggered = True
+            self.current_player.update_can_move(False)
+
+        if self.horse_game_triggered and not self.horse_game_over:
+            self.horse_timer -= 1
+            if keys[pygame.K_e]:
+                self.horse_score += 1
+
+        if not self.horse_game_over and self.horse_timer<=0:
+            self.horse_game_over = True
+            self.current_player.update_can_move(True)
+            # self.current_player.speed += self.horse_score
+
         if self.respawning:
             self.handle_respawn(keys, collision_tiles)
         else:
@@ -83,6 +107,12 @@ class PlayerManager2:
             player_screen_x = self.current_player.rect.x - camera_x
             player_screen_y = self.current_player.rect.y - camera_y
             self.current_player.draw(screen, player_screen_x, player_screen_y)
+
+        
+        if self.horse_game_triggered and not self.horse_game_over:
+            img = self.key_e_img
+            pos = (self.horse_x-img.get_width()//2, self.initial_spawn_y - 30)
+            screen.blit(img, pos)
         
         self.QTE_manager.draw(screen,camera_x,camera_y)
         # # Dessiner le nouveau joueur pendant le respawn
@@ -110,3 +140,8 @@ class PlayerManager2:
                     # Cœur vide (gris)
                     pygame.draw.circle(screen, (100, 100, 100), (heart_x + heart_size//2, health_y + heart_size//2), heart_size//2)
                     pygame.draw.circle(screen, (50, 50, 50), (heart_x + heart_size//2, health_y + heart_size//2), heart_size//2, 2)
+
+    def on_qte_end(self):
+        """Appelé lorsque le QTE est terminé"""
+        self.QTE_is_over = True
+        self.current_player.update_can_move(True)

@@ -95,7 +95,6 @@ class Guard:
                         
     def draw(self, screen, camera_x, camera_y):
         """Dessine l'ennemi avec filtre de couleur selon l'équipe"""
-        print(self.current_animation, self.animation_frame)
         if self.current_animation in self.sprites and self.sprites[self.current_animation]:
             animation_frames = self.sprites[self.current_animation]
             max_frame = len(animation_frames) - 1

@@ -212,7 +212,7 @@ class Player:
                 if now - self.last_footstep > self.footstep_delay:
                     footstep.play()
                     self.last_footstep = now
-        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+        elif (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and self.can_move:
             dx = self.speed
             self.facing_right = True
             if self.on_ground:

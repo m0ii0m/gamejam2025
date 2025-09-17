@@ -11,8 +11,13 @@ from throne_scene import ThroneScene
 from levels_utils import draw, get_collision_tiles, draw_foreground_tilemap, draw_background_tilemap
 from start_menu import StartMenu
 
+import pygame
+
 class Game:
     def __init__(self, screen):
+
+        pygame.mixer.init()
+        pygame.mixer.set_num_channels(8)  
         self.screen = screen
         self.screen_width = screen.get_width()
         self.screen_height = screen.get_height()

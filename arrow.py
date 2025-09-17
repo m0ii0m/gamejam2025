@@ -144,6 +144,8 @@ class ArrowManager:
         # Position du sol pour les flèches plantées
         self.ground_level = screen_height - 100  # Approximation du niveau du sol
         
+
+        
     def should_spawn_arrows(self, player_x):
         """Détermine si on doit spawner des flèches basé sur la position du joueur"""
         # Calculer la position de la tile 70 (début de la zone de bataille)
@@ -233,6 +235,7 @@ class ArrowManager:
         arrow.max_range = self.arrow_max_range  # Définir la portée maximale
         arrow.start_x = self.archer_x  # Position de départ pour calculer la distance
         arrow.start_y = self.archer_y
+
         self.arrows.append(arrow)
         
     def prepare_arrow_curtain(self, player_x, player_y):
@@ -277,6 +280,7 @@ class ArrowManager:
         
     def draw(self, screen, camera_x, camera_y):
         """Dessine toutes les flèches"""
+
         for arrow in self.arrows:
             arrow.draw(screen, camera_x, camera_y)
             

@@ -1,8 +1,16 @@
 import pygame
 import os
+import random
+
 
 class Player:
     def __init__(self, x, y):
+        pygame.mixer.music.load("./assets/sons/jump.wav")
+        
+        pygame.mixer.music.set_volume(0.5)  
+        self.footstep_delay = 300
+        self.last_footstep = 0 
+
         self.rect = pygame.Rect(x, y, 75, 75)  # Taille du joueur ajustée pour scale 2.34 (75x75)
         self.speed = 5
         self.jump_speed = -15
@@ -114,6 +122,9 @@ class Player:
     def update(self, keys, collision_tiles):
         """Met à jour le joueur"""
         # Gestion de l'invulnérabilité
+        jump = pygame.mixer.Sound("./assets/sons/jump.wav")
+        footstep = pygame.mixer.Sound("./assets/sons/footstep.wav")
+
         if self.invulnerable:
             self.invulnerable_timer += 1
             if self.invulnerable_timer >= self.invulnerable_duration:
@@ -162,23 +173,32 @@ class Player:
             return  # Ne pas traiter d'autres inputs pendant hit
         
         # Mouvement horizontal
+        now = pygame.time.get_ticks()
+
         dx = 0
         if (keys[pygame.K_LEFT] or keys[pygame.K_q]) and self.can_move:
             dx = -self.speed
             self.facing_right = False
             if self.on_ground:
                 self.current_animation = "run"
-        elif (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and self.can_move:
+                if now - self.last_footstep > self.footstep_delay:
+                    footstep.play()
+                    self.last_footstep = now
+        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             dx = self.speed
             self.facing_right = True
             if self.on_ground:
                 self.current_animation = "run"
+                if now - self.last_footstep > self.footstep_delay:
+                    footstep.play()
+                    self.last_footstep = now
         else:
             if self.on_ground:
                 self.current_animation = "idle"
         
         # Saut
         if (keys[pygame.K_SPACE] or keys[pygame.K_UP] or keys[pygame.K_z]) and self.on_ground and self.can_move:
+            jump.play()
             self.velocity_y = self.jump_speed
             self.on_ground = False
             self.current_animation = "jump"
@@ -271,10 +291,19 @@ class Player:
             
             if self.health <= 0:
                 self.die()
+                
+                if random.random() < 0.65:
+                    manDyingSound = pygame.mixer.Sound("./assets/sons/manDying.wav")
+                    manDyingSound.play()
+                else:
+                    fortniteSound = pygame.mixer.Sound("./assets/sons/deathFortnite.mp3")
+                    fortniteSound.play()
             else:
                 self.take_hit()
+                manStrugglingSound = pygame.mixer.Sound("./assets/sons/manStruggling.wav")
+                manStrugglingSound.play()
             
-            return True  # Indique qu'on a pris des dégâts
+            return True
         return False
     
     def die(self):

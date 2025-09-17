@@ -35,7 +35,7 @@ class Level1:
         
         # Chargement d'un background fixe (pas de parallax)
         self.background = ParallaxBg('./assets/backgrounds/level1/', (self.screen_width, self.screen_height), cloud_layers=[2, 3])
-
+        
         self.tiles = load_tileset("assets/maps/level1/DirtBrick_Assets_V5.png", self.tile_size, self.scale_factor, 20)
 
         map_info = load_map(
@@ -50,9 +50,19 @@ class Level1:
                 "DetailsCastle" 
             ]
         )
+
         self.background_layers_data = map_info["background_layers_data"]
         self.foreground_layers_data = map_info["foreground_layers_data"]
         self.map_data = map_info["map_data"]
         self.collision_tiles = map_info["collision_tiles"]
         self.layer_tintcolors = map_info["layer_tintcolors"]
-        #self.background = load_backgrounds("assets/backgrounds/level1.png",self.screen_width,self.screen_height)
+
+        channel1 = pygame.mixer.Channel(0)
+
+        level1Sound = pygame.mixer.Sound("./assets/sons/musique/level1.mp3")
+        
+        channel1.play(level1Sound, loops=-1) 
+        pygame.mixer.music.load("./assets/sons/musique/level1.mp3")
+        pygame.mixer.music.set_volume(0.5)  
+        pygame.mixer.music.play()
+        #self.load_backgrounds()

@@ -108,7 +108,8 @@ class Game:
         
         # Vérifier si le joueur a atteint le prince pour déclencher la séquence
         current_player = self.player_manager.get_current_player()
-        if (self.prince_protection.state == "waiting" and 
+        if (current_player is not None and 
+            self.prince_protection.state == "waiting" and 
             self.prince_protection.is_player_near_prince(current_player.rect.x)):
             self.prince_protection.start_sequence(current_player.rect.x)
         
@@ -125,7 +126,7 @@ class Game:
             self.player_manager.update(keys, self.level1.collision_tiles, self.arrow_manager)
         elif self.prince_protection.state in ["player_death", "pause_after_death", "zooming_out", "protection", "fading_to_black", "black_screen", "final_sequence"]:
             # Pendant la séquence du prince, ne pas permettre de nouveau spawn
-            # Juste mettre à jour les animations du joueur actuel
+            # Juste mettre à jour les animations du joueur actuel s'il existe
             current_player = self.player_manager.get_current_player()
             if current_player:
                 current_player.update_animation()
@@ -135,12 +136,14 @@ class Game:
         else:
             # État normal - mise à jour complète
             self.player_manager.update(keys, self.level1.collision_tiles, self.arrow_manager)
-        # Mise à jour du gestionnaire de joueurs
-        self.player_manager.update(keys, self.level1.collision_tiles, self.arrow_manager)
         
         # Mise à jour du gestionnaire de flèches
         current_player = self.player_manager.get_current_player()
-        self.arrow_manager.update(current_player.rect.x, current_player.rect.y, self.level1.collision_tiles)
+        if current_player is not None:
+            self.arrow_manager.update(current_player.rect.x, current_player.rect.y, self.level1.collision_tiles)
+        else:
+            # Pas de joueur actif, juste mettre à jour les flèches sans collision avec joueur
+            self.arrow_manager.update(0, 0, self.level1.collision_tiles)
 
         # Mise à jour du champ de bataille
         current_player = self.player_manager.get_current_player()
@@ -209,10 +212,12 @@ class Game:
             target_x = tile_62_x - 200  # Un peu à gauche de la tile 62 pour voir l'action
             self.camera_x = target_x
         else:
-            # Centrer la caméra sur le joueur actuel
+            # Centrer la caméra sur le joueur actuel s'il existe
             current_player = self.player_manager.get_current_player()
-            target_x = current_player.rect.centerx - self.screen_width // 2
-            self.camera_x = target_x
+            if current_player is not None:
+                target_x = current_player.rect.centerx - self.screen_width // 2
+                self.camera_x = target_x
+            # Si pas de joueur, garder la caméra où elle est
         
         # Limites de la caméra pour ne pas sortir de la map
         map_width = self.level1.map_width * self.level1.tile_size * self.level1.scale_factor

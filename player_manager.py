@@ -35,12 +35,15 @@ class PlayerManager:
         self.respawn_timer = 0
         self.respawn_duration = 120  # 2 secondes à 60 FPS
         
+        # Contrôle du respawn (pour désactiver pendant la séquence du prince)
+        self.respawn_enabled = True
+        
     def update(self, keys, collision_tiles, arrow_manager):
         """Met à jour le gestionnaire de joueurs"""
-        if self.respawning:
+        if self.respawning and self.respawn_enabled:
             self.handle_respawn(keys, collision_tiles)
-        else:
-            # Mettre à jour le joueur actuel
+        elif self.current_player is not None:
+            # Mettre à jour le joueur actuel seulement s'il existe
             self.current_player.update(keys, collision_tiles)
             
             # Vérifier les collisions avec les flèches
@@ -49,7 +52,19 @@ class PlayerManager:
             
             # Vérifier si le joueur est mort et a fini de tomber
             if self.current_player.is_dead and self.current_player.death_fall_complete:
-                self.start_respawn()
+                # Seulement démarrer le respawn si il est activé
+                if self.respawn_enabled:
+                    self.start_respawn()
+                else:
+                    # Ajouter le corps mort mais pas de respawn
+                    dead_body = DeadBody(
+                        self.current_player.rect.x, 
+                        self.current_player.rect.y,
+                        self.current_player.sprites
+                    )
+                    self.dead_bodies.append(dead_body)
+                    # Marquer qu'il n'y a plus de joueur actif
+                    self.current_player = None
     
     def handle_respawn(self, keys, collision_tiles):
         """Gère le processus de respawn"""
@@ -97,8 +112,18 @@ class PlayerManager:
         self.respawn_timer = 0
     
     def get_current_player(self):
-        """Retourne le joueur actuel (celui qu'on contrôle)"""
+        """Retourne le joueur actuel (celui qu'on contrôle). Peut être None."""
         return self.current_player
+    
+    def disable_respawn(self):
+        """Désactive le respawn (pour la séquence du prince)"""
+        self.respawn_enabled = False
+        print("Respawn désactivé - le messager ne reviendra plus")
+    
+    def enable_respawn(self):
+        """Réactive le respawn"""
+        self.respawn_enabled = True
+        print("Respawn réactivé")
     
     def is_at_castle_door(self):
         """Vérifie si le joueur a atteint la porte du château"""
@@ -110,8 +135,8 @@ class PlayerManager:
         for body in self.dead_bodies:
             body.draw(screen, camera_x, camera_y)
         
-        # Dessiner le joueur actuel
-        if not self.respawning:
+        # Dessiner le joueur actuel seulement s'il existe
+        if not self.respawning and self.current_player is not None:
             player_screen_x = self.current_player.rect.x - camera_x
             player_screen_y = self.current_player.rect.y - camera_y
             self.current_player.draw(screen, player_screen_x, player_screen_y)
@@ -124,7 +149,8 @@ class PlayerManager:
     
     def draw_health_bar(self, screen):
         """Dessine la barre de santé"""
-        if not self.respawning:
+        # Seulement afficher la barre de santé s'il y a un joueur actif
+        if not self.respawning and self.current_player is not None:
             # Position de la barre de santé
             health_x = 20
             health_y = 20

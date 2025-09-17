@@ -153,15 +153,15 @@ class PrinceProtectionManager:
                 filename = f"run{i}.png"
                 full_path = sprite_path + "run/" + filename
                 sprite = pygame.image.load(full_path).convert_alpha()
-                # Redimensionner pour correspondre à la taille du prince
-                sprite = pygame.transform.scale(sprite, (48, 64))
+                # Redimensionner pour correspondre à la taille du prince (plus grande)
+                sprite = pygame.transform.scale(sprite, (64, 85))  # Augmenté de 48x64 à 64x85
                 sprites.append(sprite)
                 
             return sprites
         except pygame.error as e:
             print(f"Erreur lors du chargement des sprites du prince: {e}")
             # Créer un sprite par défaut
-            default_sprite = pygame.Surface((48, 64))
+            default_sprite = pygame.Surface((64, 85))  # Taille augmentée
             default_sprite.fill((255, 215, 0))  # Or
             return [default_sprite] * 8
         
@@ -211,6 +211,8 @@ class PrinceProtectionManager:
                 self.dead_messenger_x = current_player.rect.x
                 self.dead_messenger_y = current_player.rect.y
                 current_player.die()
+                # Désactiver le respawn - le messager ne reviendra plus
+                player_manager.disable_respawn()
                 self.state = "player_death"
                 self.state_timer = 0
                 
@@ -317,8 +319,8 @@ class PrinceProtectionManager:
                 # Calculer le temps écoulé depuis la création des ennemis
                 time_since_creation = self.state_timer - self.final_enemies_creation_time
                 
-                # Phase 1 : Les soldats se ruent vers le prince pendant 3 secondes
-                if time_since_creation < 180:  # Pendant 3 secondes (180 frames)
+                # Phase 1 : Les soldats se ruent vers le prince pendant 4 secondes
+                if time_since_creation < 300:  # Pendant 5 secondes (300 frames au lieu de 240)
                     for enemy in self.final_enemies:
                         if not enemy.is_dead:
                             # Faire avancer les soldats vers le prince (position fixe)
@@ -331,9 +333,9 @@ class PrinceProtectionManager:
                                 enemy.rect.y += dy / distance * 3
                                 enemy.current_animation = "run"
                 
-                # Phase 2 : Tous les soldats meurent d'un coup simultanément après exactement 3 secondes (Plot Armor du prince)
-                elif time_since_creation == 180:  # Exactement 3 secondes après création
-                    print("PLOT ARMOR ACTIVÉ ! Tous les soldats meurent simultanément après 3 secondes !")
+                # Phase 2 : Tous les soldats meurent d'un coup simultanément après exactement 5 secondes (Plot Armor du prince)
+                elif time_since_creation == 300:  # Exactement 5 secondes après création (300 frames)
+                    print("PLOT ARMOR ACTIVÉ ! Tous les soldats meurent simultanément après 5 secondes !")
                     # Marquer le moment de mort simultanée
                     self.simultaneous_death_triggered = True
                     self.simultaneous_death_start_time = self.state_timer

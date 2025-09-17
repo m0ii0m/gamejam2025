@@ -7,6 +7,7 @@ from player_manager import PlayerManager
 from arrow import ArrowManager
 from battlefield_manager import BattlefieldManager
 from levels_utils import draw, get_collision_tiles, draw_foreground_tilemap, draw_background_tilemap
+from start_menu import StartMenu
 
 class Game:
     def __init__(self, screen):
@@ -15,8 +16,7 @@ class Game:
         self.screen_height = screen.get_height()
         
         # États du jeu
-        self.game_state = "level1"  # Pour l'instant, on commence directement au niveau 1
-        # self.game_state = "level2" 
+        self.game_state = "start_menu"  # Pour l'instant, on commence directement au niveau 1
         
         # Initialisation du niveau 1
         self.level1 = Level1(self.screen)
@@ -48,7 +48,30 @@ class Game:
         # Camera
         self.camera_x = 0
         self.camera_y = 0
+
+        # Start menu
+        self.start_menu = StartMenu(
+            screen_size=(self.screen_width, self.screen_height),
+            font_path="./assets/fonts/PressStart2P-Regular.ttf",
+            bg_image_path="./assets/backgrounds/level1/1.png",
+            button_image_path="./assets/gui/buttons/button.png",
+            callbacks={
+                "start": self.start_game_function,
+                "credits": self.show_credits_function,
+                "quit": self.quit_game_function
+            }
+        )
+
+    def start_game_function(self):
+        self.game_state = "level1"
+
+    def show_credits_function(self):
+        pass
         
+    def quit_game_function(self):
+        pygame.quit()
+        sys.exit()
+
     def state_manager(self):
         """Gère les différents états du jeu"""
         # Gestion des événements
@@ -61,7 +84,10 @@ class Game:
                     pygame.quit()
                     sys.exit()
         
-        if self.game_state == "level1":
+        if self.game_state == "start_menu":
+            self.start_menu.update()
+            self.start_menu.draw(self.screen)
+        elif self.game_state == "level1":
             self.update_level1()
             self.draw_level1()
         elif self.game_state == "level2":

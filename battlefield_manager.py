@@ -7,19 +7,19 @@ class BattlefieldManager:
     def __init__(self, tilemap_width=4000, tilemap_height=800):
         self.tilemap_width = tilemap_width
         self.tilemap_height = tilemap_height
-        self.ground_level = 600  # Niveau du sol approximatif
+        self.ground_level = 655
         
-        # Listes des combattants - Seulement des ennemis maintenant
+        # Listes des combattants
         self.red_enemies = []    # Ennemis rouges
         self.blue_enemies = []   # Ennemis bleus
         
-        # Paramètres de spawn - ENCORE PLUS DE RÉDUCTION DU NOMBRE D'ENNEMIS
-        self.max_red_enemies = 15   # Réduit de 25 à 15
-        self.max_blue_enemies = 15  # Réduit de 25 à 15
+        # Paramètres de spawn
+        self.max_red_enemies = 50
+        self.max_blue_enemies = 50
         self.spawn_timer = 0
-        self.spawn_interval = 180   # Spawn toutes les 3 secondes au lieu de 2
+        self.spawn_interval = 120  # 2 secondes à 60 FPS (réduit de 180)
         
-        # Zones de spawn - RANDOM entre les tiles 70 et 100
+        # Zones de spawn 
         tile_size = 16  # Taille d'une tile
         scale_factor = 2.5  # Facteur d'échelle
         
@@ -35,15 +35,15 @@ class BattlefieldManager:
         
     def initialize_battlefield(self):
         """Initialise le champ de bataille avec les premiers combattants"""
-        # Spawner les ennemis rouges - SPAWN RANDOM entre tiles 70-100, TRÈS PEU NOMBREUX
-        for i in range(10):  # Réduit de 15 à 10
+        # Spawner les ennemis rouges
+        for i in range(25):  # Augmenté à 25 combattants
             x = random.randint(self.spawn_zone_start, self.spawn_zone_end)
             y = self.ground_level - 100  # Au-dessus du sol
             enemy = Enemy(x, y, team="red")
             self.red_enemies.append(enemy)
             
-        # Spawner les ennemis bleus - SPAWN RANDOM entre tiles 70-100, TRÈS PEU NOMBREUX
-        for i in range(10):  # Réduit de 15 à 10
+        # Spawner les ennemis bleus
+        for i in range(25):  # Augmenté à 25 combattants
             x = random.randint(self.spawn_zone_start, self.spawn_zone_end)
             y = self.ground_level - 100  # Au-dessus du sol
             enemy = Enemy(x, y, team="blue")
@@ -81,15 +81,15 @@ class BattlefieldManager:
         alive_red = sum(1 for e in self.red_enemies if not e.is_dead)
         alive_blue = sum(1 for e in self.blue_enemies if not e.is_dead)
         
-        # Spawner de nouveaux ennemis rouges si nécessaire - SEUILS TRÈS RÉDUITS
-        if len(self.red_enemies) < self.max_red_enemies and alive_red < 10:  # Réduit de 20 à 10
+        # Spawner de nouveaux ennemis rouges si nécessaire
+        if len(self.red_enemies) < self.max_red_enemies and alive_red < 25:  # Augmenté à 25
             x = random.randint(self.spawn_zone_start, self.spawn_zone_end)
             y = self.ground_level - 100
             enemy = Enemy(x, y, team="red")
             self.red_enemies.append(enemy)
             
-        # Spawner de nouveaux ennemis bleus si nécessaire - SEUILS TRÈS RÉDUITS
-        if len(self.blue_enemies) < self.max_blue_enemies and alive_blue < 10:  # Réduit de 20 à 10
+        # Spawner de nouveaux ennemis bleus si nécessaire
+        if len(self.blue_enemies) < self.max_blue_enemies and alive_blue < 25:  # Augmenté à 25
             x = random.randint(self.spawn_zone_start, self.spawn_zone_end)
             y = self.ground_level - 100
             enemy = Enemy(x, y, team="blue")

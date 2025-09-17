@@ -51,7 +51,7 @@ class Enemy:
         
         # COOLDOWN GLOBAL POUR ACTIONS (5 secondes = 300 frames)
         self.action_cooldown = 0  # Timer pour empêcher actions fréquentes
-        self.action_cooldown_duration = 300  # 5 secondes à 60 FPS
+        self.action_cooldown_duration = 120  # 2 secondes à 60 FPS
         
         # Chargement des sprites
         self.sprites = {}
@@ -90,11 +90,6 @@ class Enemy:
                         self.sprites[anim_name].append(scaled_image)
                     except pygame.error as e:
                         print(f"Erreur lors du chargement de {img_path}: {e}")
-                
-                if self.sprites[anim_name]:
-                    print(f"Animation '{anim_name}' chargée avec {len(self.sprites[anim_name])} frames")
-                else:
-                    print(f"Aucune image trouvée pour l'animation '{anim_name}'")
                     
     def update(self, collision_tiles, enemy_targets, ally_enemies, player=None):
         """Met à jour l'ennemi avec IA automatique"""

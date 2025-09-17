@@ -63,12 +63,13 @@ class PlayerManager:
         # Le nouveau joueur se déplace automatiquement vers la position du corps
         target_x = self.dead_bodies[-1].rect.x if self.dead_bodies else self.initial_spawn_x
         
-        if self.new_player.rect.x > target_x + 50:  # S'arrêter près du corps
+        if self.new_player.rect.x > target_x:  # S'arrêter exactement à la position du corps
             self.new_player.rect.x -= 3  # Vitesse d'approche
             self.new_player.current_animation = "run"
             self.new_player.facing_right = False
         else:
-            # Le nouveau joueur est arrivé, passer le contrôle
+            # Le nouveau joueur est arrivé exactement à la position du corps mort
+            self.new_player.rect.x = target_x  # Position exacte
             self.new_player.current_animation = "idle"
             self.current_player = self.new_player
             self.new_player = None

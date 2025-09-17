@@ -71,7 +71,7 @@ class Game:
         
         # Mise à jour du gestionnaire de flèches
         current_player = self.player_manager.get_current_player()
-        self.arrow_manager.update(current_player.rect.x, current_player.rect.y)
+        self.arrow_manager.update(current_player.rect.x, current_player.rect.y, self.level1.get_collision_tiles())
         
         # Mise à jour du champ de bataille
         current_player = self.player_manager.get_current_player()

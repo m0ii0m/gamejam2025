@@ -84,7 +84,6 @@ class Player:
                     frames = [frame]
                 
                 self.sprites[anim_name] = frames
-                print(f"Animation '{anim_name}' chargée avec {len(frames)} frames")
                 
             except pygame.error as e:
                 print(f"Erreur lors du chargement de l'animation {anim_name}: {e}")

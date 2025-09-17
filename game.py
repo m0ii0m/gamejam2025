@@ -6,8 +6,13 @@ from player_manager import PlayerManager
 from arrow import ArrowManager
 from battlefield_manager import BattlefieldManager
 
+import pygame
+
 class Game:
     def __init__(self, screen):
+
+        pygame.mixer.init()
+        pygame.mixer.set_num_channels(8)  
         self.screen = screen
         self.screen_width = screen.get_width()
         self.screen_height = screen.get_height()

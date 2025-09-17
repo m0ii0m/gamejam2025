@@ -3,6 +3,7 @@ import xml.etree.ElementTree as ET
 import os
 from parallax_bg import ParallaxBg
 
+
 def hex_to_rgb(hex_color):
     """Convertit une couleur hexadécimale en tuple RGB"""
     if hex_color.startswith('#'):
@@ -99,6 +100,14 @@ class Level1:
         
         self.load_tileset()
         self.load_map()
+        channel1 = pygame.mixer.Channel(0)
+
+        level1Sound = pygame.mixer.Sound("./assets/sons/musique/level1.mp3")
+        
+        channel1.play(level1Sound, loops=-1) 
+        pygame.mixer.music.load("./assets/sons/musique/level1.mp3")
+        pygame.mixer.music.set_volume(0.5)  
+        pygame.mixer.music.play()
         #self.load_backgrounds()
     
     def load_tileset(self):

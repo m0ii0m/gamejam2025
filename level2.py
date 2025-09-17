@@ -1,9 +1,8 @@
-import pygame
 import xml.etree.ElementTree as ET
 from levels_utils import load_map, load_tileset
 from parallax_bg import ParallaxBg
 
-class Level1:
+class Level2:
     def __init__(self, screen):
         self.screen = screen
         self.screen_width = screen.get_width()
@@ -26,6 +25,7 @@ class Level1:
         
         # Chargement de la tilemap
         self.tiles = {}
+        self.tiles = {}
         self.tinted_tiles_cache = {}  # Cache pour les tiles teintées
         self.layer_tintcolors = {}    # Couleurs de teinte par layer
         self.map_data = []
@@ -34,20 +34,16 @@ class Level1:
         self.collision_tiles = []
         
         # Chargement d'un background fixe (pas de parallax)
-        self.background = ParallaxBg('./assets/backgrounds/level1/', (self.screen_width, self.screen_height), cloud_layers=[2, 3])
+        self.background = ParallaxBg('./assets/backgrounds/level2/', (self.screen_width, self.screen_height), cloud_layers=[2, 3])
 
-        self.tiles = load_tileset("assets/maps/level1/DirtBrick_Assets_V5.png", self.tile_size, self.scale_factor, 20)
+        self.tiles = load_tileset("assets/maps/level2/DirtBrick_Assets_V5.png", self.tile_size, self.scale_factor, 20)
 
         map_info = load_map(
-            "assets/maps/level1/level1.tmx", ["FirstLayer", "GrassLayerOutside"], self.tile_size, self.scale_factor, self.map_offset_y, [
-                "FirstLayer",           
-                "OutsideDetails",
-                "GrassLayerOutside", 
-                "FloorDetailsOutside",
-                "CastleBackground",
-                "CastleForeground",
-                "DetailsCastle2",
-                "DetailsCastle" 
+            "assets/maps/level2/level2.tmx", ["Ground"], self.tile_size, self.scale_factor, self.map_offset_y, [
+                "Bush",           
+                "Background",
+                "Ground",
+                "DecorationFront",
             ]
         )
         self.background_layers_data = map_info["background_layers_data"]
@@ -56,3 +52,4 @@ class Level1:
         self.collision_tiles = map_info["collision_tiles"]
         self.layer_tintcolors = map_info["layer_tintcolors"]
         #self.background = load_backgrounds("assets/backgrounds/level1.png",self.screen_width,self.screen_height)
+

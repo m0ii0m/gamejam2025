@@ -1,10 +1,12 @@
 import pygame
 import sys
 from level1 import Level1
+from level2 import Level2
 from player import Player
 from player_manager import PlayerManager
 from arrow import ArrowManager
 from battlefield_manager import BattlefieldManager
+from levels_utils import draw, get_collision_tiles, draw_foreground_tilemap, draw_background_tilemap
 
 class Game:
     def __init__(self, screen):
@@ -14,9 +16,11 @@ class Game:
         
         # États du jeu
         self.game_state = "level1"  # Pour l'instant, on commence directement au niveau 1
+        # self.game_state = "level2" 
         
         # Initialisation du niveau 1
         self.level1 = Level1(self.screen)
+        self.level2 = Level2(self.screen)
         
         # Calculer la position de la porte du château (approximativement 80% de la largeur de la map)
         map_width_pixels = self.level1.map_width * self.level1.tile_size * self.level1.scale_factor
@@ -60,6 +64,9 @@ class Game:
         if self.game_state == "level1":
             self.update_level1()
             self.draw_level1()
+        elif self.game_state == "level2":
+            self.update_level2()
+            self.draw_level2()
     
     def update_level1(self):
         """Met à jour le niveau 1"""
@@ -67,15 +74,26 @@ class Game:
         keys = pygame.key.get_pressed()
         
         # Mise à jour du gestionnaire de joueurs
-        self.player_manager.update(keys, self.level1.get_collision_tiles(), self.arrow_manager)
+        self.player_manager.update(keys, self.level1.collision_tiles, self.arrow_manager)
         
         # Mise à jour du gestionnaire de flèches
         current_player = self.player_manager.get_current_player()
-        self.arrow_manager.update(current_player.rect.x, current_player.rect.y, self.level1.get_collision_tiles())
-        
+        self.arrow_manager.update(current_player.rect.x, current_player.rect.y, self.level1.collision_tiles)
+
         # Mise à jour du champ de bataille
         current_player = self.player_manager.get_current_player()
-        self.battlefield_manager.update(self.level1.get_collision_tiles(), current_player)
+        self.battlefield_manager.update(self.level1.collision_tiles, current_player)
+
+        # Mise à jour de la caméra pour suivre le joueur
+        self.update_camera()
+
+    def update_level2(self):
+        """Met à jour le niveau 2"""
+        # Récupération des touches pressées
+        keys = pygame.key.get_pressed()
+
+        # Mise à jour du gestionnaire de joueurs
+        self.player_manager.update(keys, self.level2.collision_tiles, self.arrow_manager)
         
         # Mise à jour de la caméra pour suivre le joueur
         self.update_camera()
@@ -100,7 +118,13 @@ class Game:
         # Ne pas effacer ici - le niveau 1 gère son propre background
         
         # Dessiner le niveau (background + tilemap background)
-        self.level1.draw(self.screen, self.camera_x, self.camera_y)
+        draw(self.screen, self.level1.background,
+             lambda screen, camera_x, camera_y: draw_background_tilemap(
+        screen, camera_x, camera_y,
+        self.level1.background_layers_data, self.level1.tile_size, self.level1.scale_factor,
+        self.level1.map_width, self.level1.map_height, self.level1.map_offset_y,
+        self.level1.tiles, self.level1.tinted_tiles_cache, self.level1.layer_tintcolors
+    ),self.camera_x, self.camera_y)
         
         # Dessiner le champ de bataille (warriors et enemies) EN ARRIÈRE-PLAN
         self.battlefield_manager.draw(self.screen, self.camera_x, self.camera_y)
@@ -109,7 +133,7 @@ class Game:
         self.arrow_manager.draw(self.screen, self.camera_x, self.camera_y)
         
         # Dessiner les layers foreground par-dessus les NPCs
-        self.level1.draw_foreground_tilemap(self.screen, self.camera_x, self.camera_y)
+        draw_foreground_tilemap(self.screen, self.camera_x, self.camera_y, self.level1.foreground_layers_data, self.level1.tile_size, self.level1.scale_factor, self.level1.map_width, self.level1.map_height, self.level1.map_offset_y, self.level1.tiles, self.level1.tinted_tiles_cache, self.level1.layer_tintcolors)
         
         # Dessiner le gestionnaire de joueurs (joueur actuel + corps morts) AU PREMIER PLAN
         self.player_manager.draw(self.screen, self.camera_x, self.camera_y)
@@ -119,3 +143,23 @@ class Game:
         
         # Dessiner l'interface de bataille
         self.battlefield_manager.draw_battle_ui(self.screen)
+
+    def draw_level2(self):
+        """Dessine le niveau 2"""
+        # Ne pas effacer ici - le niveau 2 gère son propre background
+        
+        # Dessiner le niveau (background + tilemap background)
+        draw(self.screen, self.level2.background,
+             lambda screen, camera_x, camera_y: draw_background_tilemap(
+        screen, camera_x, camera_y,
+        self.level2.background_layers_data, self.level2.tile_size, self.level2.scale_factor,
+        self.level2.map_width, self.level2.map_height, self.level2.map_offset_y,
+        self.level2.tiles, self.level2.tinted_tiles_cache, self.level2.layer_tintcolors
+        ),self.camera_x, self.camera_y)
+        
+        # Dessiner les layers foreground par-dessus les NPCs
+        draw_foreground_tilemap(self.screen, self.camera_x, self.camera_y, self.level2.foreground_layers_data, self.level2.tile_size, self.level2.scale_factor, self.level2.map_width, self.level2.map_height, self.level2.map_offset_y, self.level2.tiles, self.level2.tinted_tiles_cache, self.level2.layer_tintcolors)
+        
+        # Dessiner le gestionnaire de joueurs (joueur actuel + corps morts) AU PREMIER PLAN
+        self.player_manager.draw(self.screen, self.camera_x, self.camera_y)
+        

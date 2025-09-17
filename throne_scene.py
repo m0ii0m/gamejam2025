@@ -61,7 +61,7 @@ class ThroneScene:
 			self.player.rect.y = ground_guess_y
 
 		# Target near the right side (throne area visually)
-		self.target_x = self.map_width * self.tile_px - 8 * self.tile_px
+		self.target_x = self.map_width * self.tile_px - 58 * self.tile_px
 		self.walk_speed = 5 #TODO 3  # will be used as Player.speed during the walk
 
 	# ---------- Map loading ----------
@@ -175,7 +175,7 @@ class ThroneScene:
 				self.cinematic_phase = "zoom_on_throne"
 				self.player.rect.centery -= 80
 		elif self.cinematic_phase == "zoom_on_throne":
-			self.player.rect.centerx = self.map_width * self.tile_px - 3 * self.tile_px
+			self.player.rect.centerx = self.map_width * self.tile_px - 53 * self.tile_px
 
 			# Make the prince face left
 			self.player.facing_right = False
@@ -184,7 +184,9 @@ class ThroneScene:
 			self.player.current_animation = "idle"
 			self.player.animation_frame = 0
 
-			# Zoom in on the prince sitting on the throne
+			# Slightly increase zoom speed and set a higher maximum zoom level
+			self.zoom_speed = 0.005  # Slightly faster zoom
+			self.max_zoom = 2.9  # More zoomed-in final state
 			self.zoom_factor = min(self.max_zoom, self.zoom_factor + self.zoom_speed)
 			self._update_camera()
 			if self.zoom_factor >= self.max_zoom:
@@ -261,28 +263,25 @@ class ThroneScene:
 			except Exception:
 				pygame.draw.rect(base_surface, (0, 128, 255), pygame.Rect(px, py, 40, 40))
 
-		# If zooming, scale and center on the player's current position
-		if base_surface is not screen:
-			zoomed_w = int(self.screen_width * self.zoom_factor)
-			zoomed_h = int(self.screen_height * self.zoom_factor)
-			zoomed = pygame.transform.smoothscale(base_surface, (zoomed_w, zoomed_h))
-
-			# Compute offsets to center the zoom on the prince
-			player_screen_x = round(self.player.rect.centerx - 300 - self.camera_x)
-			player_screen_y = round(self.player.rect.centery - 80 - self.camera_y)
-			zx = int(player_screen_x * self.zoom_factor)
-			zy = int(player_screen_y * self.zoom_factor)
-			offset_x = self.screen_width // 2 - zx
-			offset_y = self.screen_height // 2 - zy
-
-			# Clear the screen and blit the zoomed surface centered on the prince
-			screen.fill((0, 0, 0))
-			screen.blit(zoomed, (offset_x, offset_y))
-
 		# Draw fade effect if in fade phase
 		if self.cinematic_phase == "fade_to_black":
 			fade_surface = pygame.Surface((self.screen_width, self.screen_height))
 			fade_surface.fill((0, 0, 0))
 			fade_surface.set_alpha(self.fade_alpha)
 			screen.blit(fade_surface, (0, 0))
+
+		# Adjust zoom to ensure it centers on the player
+		if base_surface is not screen:
+			zoomed_w = int(self.screen_width * self.zoom_factor)
+			zoomed_h = int(self.screen_height * self.zoom_factor)
+			zoomed = pygame.transform.smoothscale(base_surface, (zoomed_w, zoomed_h))
+
+			# Compute offsets to center the zoom on the player with a Y offset of 10
+			player_screen_x = self.player.rect.centerx - self.camera_x
+			player_screen_y = self.player.rect.centery - self.camera_y - 60
+			offset_x = self.screen_width // 2 - int(player_screen_x * self.zoom_factor)
+			offset_y = self.screen_height // 2 - int(player_screen_y * self.zoom_factor)
+
+			# Blit the zoomed surface centered on the player
+			screen.blit(zoomed, (offset_x, offset_y))
 

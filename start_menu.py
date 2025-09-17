@@ -1,11 +1,13 @@
 import pygame
 from button import Button
+from parallax_bg import ParallaxBg
 
 class StartMenu:
     def __init__(self, screen_size, font_path, bg_image_path, button_image_path, callbacks):
         self.screen_width, self.screen_height = screen_size
 
         # Load assets
+        self.background = ParallaxBg('./assets/backgrounds/start_menu/', screen_size, cloud_layers=[2,3,4])
         self.bg_image = pygame.image.load(bg_image_path).convert()
         self.bg_image = pygame.transform.scale(self.bg_image, screen_size)
         self.button_image = pygame.image.load(button_image_path).convert_alpha()
@@ -60,7 +62,9 @@ class StartMenu:
             button.update(mouse_pos, mouse_click)
 
     def draw(self, surface):
-        surface.blit(self.bg_image, (0, 0))
+        #surface.blit(self.bg_image, (0, 0))
+        self.background.update()
+        self.background.draw(surface, 0)
         surface.blit(self.title_shadow_text, self.title_shadow_rect)
         surface.blit(self.title_text, self.title_rect)
         for button in self.buttons:

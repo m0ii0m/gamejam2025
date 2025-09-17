@@ -1,11 +1,16 @@
 import pygame as pg
-from core import Scene, WIDTH, HEIGHT, WHITE, BLACK, draw_multiline_center
+from core import Scene, WIDTH, HEIGHT, WHITE, BLACK, draw_multiline_left
 
 class IntroScene(Scene):
     def __init__(self, game):
+
+        self.font_bahiana = pg.font.Font("assets/fonts/Bahiana/Bahiana-Regular.ttf", 34)
+
         super().__init__(game)
         self.typing_sound = pg.mixer.Sound("assets/sounds/Writing-Sound.wav")
         self.typing_sound.set_volume(1) 
+        self.typing_sound2 = pg.mixer.Sound("assets/sounds/Soft Wind.wav")
+        self.typing_sound2.set_volume(0.5) 
 
 
         self.lines = [
@@ -25,7 +30,7 @@ class IntroScene(Scene):
     def handle_event(self, event):
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_RETURN:
-                # Lazy import to avoid circular imports
+                self.typing_sound2.stop()
                 from scenes.runner import RunnerScene
                 self.game.change_scene(RunnerScene(self.game))
             elif event.key == pg.K_ESCAPE:
@@ -34,7 +39,9 @@ class IntroScene(Scene):
     def draw(self, surf):
         if self.current_line == 0 and self.current_char == 0:
             self.typing_sound.play()
+            self.typing_sound2.play(loops=-1)
         surf.fill(BLACK)
+        
         if self.current_line >= len(self.lines):
             self.typing_sound.stop()
 
@@ -51,5 +58,8 @@ class IntroScene(Scene):
                     self.current_char = 0
                 self.last_update = now
 
-        draw_multiline_center(surf, self.displayed_text, 26, WHITE, (WIDTH // 2, HEIGHT // 2))
+        draw_multiline_left(surf,self.lines,self.displayed_text, WHITE,(WIDTH//2, HEIGHT//2),line_gap=10,font=self.font_bahiana)
+
+
+
 

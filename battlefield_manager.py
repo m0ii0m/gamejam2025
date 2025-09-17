@@ -27,8 +27,8 @@ class BattlefieldManager:
         battlefield_end = 100 * tile_size * scale_factor   # Tile 100
         
         # Zone commune pour spawn aléatoire des deux équipes
-        self.spawn_zone_start = battlefield_start
-        self.spawn_zone_end = battlefield_end
+        self.spawn_zone_start = int(battlefield_start)
+        self.spawn_zone_end = int(battlefield_end)
         
         # Initialiser la bataille
         self.initialize_battlefield()

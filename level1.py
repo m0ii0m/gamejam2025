@@ -59,10 +59,10 @@ class Level1:
 
         channel1 = pygame.mixer.Channel(0)
 
-        level1Sound = pygame.mixer.Sound("./assets/sons/musique/level1.mp3")
+        level1Sound = pygame.mixer.Sound("./assets/sons/musique/Level1.mp3")
         
         channel1.play(level1Sound, loops=-1) 
-        pygame.mixer.music.load("./assets/sons/musique/level1.mp3")
+        pygame.mixer.music.load("./assets/sons/musique/Level1.mp3")
         pygame.mixer.music.set_volume(0.5)  
         pygame.mixer.music.play()
         #self.load_backgrounds()

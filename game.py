@@ -5,13 +5,13 @@ from level2 import Level2
 from player import Player
 from player_manager import PlayerManager
 from player_manager_lvl2 import PlayerManager2
+from prince import Prince
 from arrow import ArrowManager
 from battlefield_manager import BattlefieldManager
 from throne_scene import ThroneScene
 from levels_utils import draw, get_collision_tiles, draw_foreground_tilemap, draw_background_tilemap
 from start_menu import StartMenu
-
-import pygame
+from prince_protection_manager import PrinceProtectionManager
 
 class Game:
     def __init__(self, screen):
@@ -106,6 +106,35 @@ class Game:
         # Récupération des touches pressées
         keys = pygame.key.get_pressed()
         
+        # Vérifier si le joueur a atteint le prince pour déclencher la séquence
+        current_player = self.player_manager.get_current_player()
+        if (self.prince_protection.state == "waiting" and 
+            self.prince_protection.is_player_near_prince(current_player.rect.x)):
+            self.prince_protection.start_sequence(current_player.rect.x)
+        
+        # Mise à jour du gestionnaire de protection du prince
+        if self.prince_protection.state != "waiting":
+            level_complete = self.prince_protection.update(self.player_manager, self.arrow_manager, self.level1.collision_tiles, keys)
+            if level_complete:
+                print("Niveau terminé ! Plot Armor activé !")
+                # Ici tu peux ajouter la logique de fin de niveau
+        
+        # Mise à jour du gestionnaire de joueurs (SAUF pendant la séquence du prince)
+        if self.prince_protection.state in ["waiting", "cinematic_slowdown"]:
+            # Pendant ces états, laisser le player_manager gérer normalement
+            self.player_manager.update(keys, self.level1.collision_tiles, self.arrow_manager)
+        elif self.prince_protection.state in ["player_death", "pause_after_death", "zooming_out", "protection", "fading_to_black", "black_screen", "final_sequence"]:
+            # Pendant la séquence du prince, ne pas permettre de nouveau spawn
+            # Juste mettre à jour les animations du joueur actuel
+            current_player = self.player_manager.get_current_player()
+            if current_player:
+                current_player.update_animation()
+            # Mettre à jour aussi le nouveau joueur pendant le respawn s'il existe
+            if self.player_manager.respawning and self.player_manager.new_player:
+                self.player_manager.new_player.update_animation()
+        else:
+            # État normal - mise à jour complète
+            self.player_manager.update(keys, self.level1.collision_tiles, self.arrow_manager)
         # Mise à jour du gestionnaire de joueurs
         self.player_manager.update(keys, self.level1.collision_tiles, self.arrow_manager)
         
@@ -116,8 +145,8 @@ class Game:
         # Mise à jour du champ de bataille
         current_player = self.player_manager.get_current_player()
         self.battlefield_manager.update(self.level1.collision_tiles, current_player)
-
-        # Mise à jour de la caméra pour suivre le joueur
+        
+        # Mise à jour de la caméra pour suivre le joueur (ou le prince pendant la protection)
         self.update_camera()
 
     def update_level2(self):
@@ -128,20 +157,68 @@ class Game:
         # Mise à jour du gestionnaire de joueurs
         self.player_manager.update(keys, self.level2.collision_tiles)
         
-        # Mise à jour de la caméra pour suivre le joueur
+        # Mise à jour de la caméra pour suivre le joueur (ou le prince pendant la protection)
         self.update_camera()
     
     def update_camera(self):
-        """Met à jour la position de la caméra pour suivre le joueur"""
-        # Centrer la caméra sur le joueur actuel
-        current_player = self.player_manager.get_current_player()
-        target_x = current_player.rect.centerx - self.screen_width // 2
+        """Met à jour la position de la caméra pour suivre le joueur ou le prince"""
+        if self.prince_protection.state == "zooming_out":
+            # Phase de dézoomer vers la tile 62 (collée à droite de l'écran)
+            tile_62_x = self.prince_protection.target_zoom_tile * 16 * 2.5  # Tile 62 en pixels
+            target_x = tile_62_x - self.screen_width + 100  # Tile 62 collée à droite (avec marge de 100px)
+            
+            # Lisser le mouvement de la caméra
+            camera_speed = 8
+            if abs(self.camera_x - target_x) > camera_speed:
+                if self.camera_x < target_x:
+                    self.camera_x += camera_speed
+                else:
+                    self.camera_x -= camera_speed
+            else:
+                self.camera_x = target_x
+                self.prince_protection.zoom_complete = True
+                
+        elif self.prince_protection.state in ["zoom_on_prince", "dezoom_reveal_enemies"]:
+            # Gestion du zoom sur le prince
+            zoom_target = self.prince_protection.get_zoom_target_position()
+            if zoom_target:
+                if self.prince_protection.state == "zoom_on_prince":
+                    # Centrer sur le prince pendant le zoom
+                    target_x = zoom_target[0] - self.screen_width // 2
+                elif self.prince_protection.state == "dezoom_reveal_enemies":
+                    # Prince à 20px du bord gauche
+                    target_x = zoom_target[0]
+                
+                # Lisser le mouvement de la caméra
+                camera_speed = 5
+                if abs(self.camera_x - target_x) > camera_speed:
+                    if self.camera_x < target_x:
+                        self.camera_x += camera_speed
+                    else:
+                        self.camera_x -= camera_speed
+                else:
+                    self.camera_x = target_x
+                
+        elif self.prince_protection.state in ["protection"]:
+            # Caméra fixe pendant la phase de protection
+            # Garder la vue avec la tile 62 à droite
+            pass
+        elif self.prince_protection.state == "final_sequence":
+            # Caméra fixe à la tile 62 (côté gauche) pour voir l'action depuis la gauche
+            tile_62_x = 62 * 16 * 2.5  # Tile 62 en pixels
+            target_x = tile_62_x - 200  # Un peu à gauche de la tile 62 pour voir l'action
+            self.camera_x = target_x
+        else:
+            # Centrer la caméra sur le joueur actuel
+            current_player = self.player_manager.get_current_player()
+            target_x = current_player.rect.centerx - self.screen_width // 2
+            self.camera_x = target_x
         
         # Limites de la caméra pour ne pas sortir de la map
         map_width = self.level1.map_width * self.level1.tile_size * self.level1.scale_factor
         
         # Permettre à la caméra de voir toute la largeur de la map
-        self.camera_x = max(0, min(target_x, map_width - self.screen_width))
+        self.camera_x = max(0, min(self.camera_x, map_width - self.screen_width))
         
         # FIXER la caméra Y à 0 pour que la tilemap reste toujours collée en bas
         self.camera_y = 0
@@ -150,6 +227,20 @@ class Game:
         """Dessine le niveau 1"""
         # Ne pas effacer ici - le niveau 1 gère son propre background
         
+        # Vérifier si on est dans l'état "black_screen" pour gérer l'écran noir
+        if self.prince_protection.state == "black_screen":
+            self.screen.fill((0, 0, 0))
+            return  # Écran noir complet, ne rien dessiner d'autre
+        
+        # Gérer le zoom pendant les états zoom_on_prince et dezoom_reveal_enemies
+        zoom_factor = self.prince_protection.get_zoom_factor()
+        if zoom_factor > 1.0:
+            self.draw_level1_with_zoom(zoom_factor)
+        else:
+            self.draw_level1_normal()
+    
+    def draw_level1_normal(self):
+        """Dessine le niveau 1 normalement sans zoom"""
         # Dessiner le niveau (background + tilemap background)
         draw(self.screen, self.level1.background,
              lambda screen, camera_x, camera_y: draw_background_tilemap(
@@ -160,7 +251,15 @@ class Game:
     ),self.camera_x, self.camera_y)
         
         # Dessiner le champ de bataille (warriors et enemies) EN ARRIÈRE-PLAN
-        self.battlefield_manager.draw(self.screen, self.camera_x, self.camera_y)
+        self.battlefield_manager.draw(self.screen, self.camera_x, self.camera_y, 
+                                    self.prince_protection.state, self.prince_protection.current_prince_x)
+        
+        # Dessiner le Prince (visible jusqu'à ce que la protection commence)
+        if self.prince_protection.state in ["waiting", "cinematic_slowdown", "player_death", "pause_after_death"]:
+            self.prince.draw(self.screen, self.camera_x, self.camera_y)
+        
+        # Dessiner le mini-niveau de protection du prince (SAUF l'écran noir)
+        self.prince_protection.draw(self.screen, self.camera_x, self.camera_y)
         
         # Dessiner les flèches
         self.arrow_manager.draw(self.screen, self.camera_x, self.camera_y)
@@ -171,11 +270,63 @@ class Game:
         # Dessiner le gestionnaire de joueurs (joueur actuel + corps morts) AU PREMIER PLAN
         self.player_manager.draw(self.screen, self.camera_x, self.camera_y)
         
-        # Dessiner la barre de santé
+        # Dessiner la barre de santé du joueur
         self.player_manager.draw_health_bar(self.screen)
+        
+        # Dessiner la barre de santé du prince (pendant le mini-jeu)
+        self.prince_protection.draw_prince_health_bar(self.screen)
         
         # Dessiner l'interface de bataille
         self.battlefield_manager.draw_battle_ui(self.screen)
+        
+    def draw_level1_with_zoom(self, zoom_factor):
+        """Dessine le niveau 1 avec zoom sur le prince"""
+        # Créer une surface temporaire pour le rendu à la résolution normale
+        temp_surface = pygame.Surface((self.screen_width, self.screen_height))
+        
+        # Dessiner sur la surface temporaire avec la caméra normale
+        # Dessiner le niveau (background + tilemap background) sur la surface temporaire
+        draw(temp_surface, self.level1.background,
+             lambda screen, camera_x, camera_y: draw_background_tilemap(
+        screen, camera_x, camera_y,
+        self.level1.background_layers_data, self.level1.tile_size, self.level1.scale_factor,
+        self.level1.map_width, self.level1.map_height, self.level1.map_offset_y,
+        self.level1.tiles, self.level1.tinted_tiles_cache, self.level1.layer_tintcolors
+    ),self.camera_x, self.camera_y)
+        
+        # Dessiner le champ de bataille pendant le dézoom pour voir les ennemis
+        if self.prince_protection.state == "dezoom_reveal_enemies":
+            self.battlefield_manager.draw(temp_surface, self.camera_x, self.camera_y, 
+                                        self.prince_protection.state, self.prince_protection.current_prince_x)
+        
+        # Dessiner les foreground layers sur la surface temporaire
+        draw_foreground_tilemap(temp_surface, self.camera_x, self.camera_y, 
+                               self.level1.foreground_layers_data, self.level1.tile_size, self.level1.scale_factor, 
+                               self.level1.map_width, self.level1.map_height, self.level1.map_offset_y, 
+                               self.level1.tiles, self.level1.tinted_tiles_cache, self.level1.layer_tintcolors)
+        
+        # Dessiner le prince
+        self.prince_protection.draw(temp_surface, self.camera_x, self.camera_y)
+        
+        # Calculer la région à zoomer centrée sur le prince
+        prince_screen_x = self.prince_protection.current_prince_x - self.camera_x
+        prince_screen_y = self.prince_protection.prince_y - self.camera_y
+        
+        # Dimensions de la région à extraire (plus petite que l'écran selon le zoom)
+        crop_width = int(self.screen_width / zoom_factor)
+        crop_height = int(self.screen_height / zoom_factor)
+        
+        # Position de début de la région centrée sur le prince
+        crop_x = max(0, min(self.screen_width - crop_width, int(prince_screen_x - crop_width // 2)))
+        crop_y = max(0, min(self.screen_height - crop_height, int(prince_screen_y - crop_height // 2)))
+        
+        # Extraire la région à zoomer
+        crop_rect = pygame.Rect(crop_x, crop_y, crop_width, crop_height)
+        cropped_surface = temp_surface.subsurface(crop_rect).copy()
+        
+        # Redimensionner et dessiner sur l'écran principal
+        zoomed_surface = pygame.transform.scale(cropped_surface, (self.screen_width, self.screen_height))
+        self.screen.blit(zoomed_surface, (0, 0))
 
     def draw_level2(self):
         """Dessine le niveau 2"""
@@ -199,26 +350,39 @@ class Game:
     def init_level1(self):
         # Calculer la position de la porte du château (approximativement 80% de la largeur de la map)
         map_width_pixels = self.level1.map_width * self.level1.tile_size * self.level1.scale_factor
-
         castle_door_x = map_width_pixels * 0.8  # Position approximative de la porte
+        
         # Position de spawn initiale du joueur (côté droit)
         start_x = map_width_pixels - 300  # 300 pixels avant la fin de la map
-        # Position Y : Sur le sol (ligne 18-19 de la tilemap selon l'image)
-        ground_tile_y = 17  # Ligne du sol dans la tilemap
-
+        
+        # Position Y : Utiliser la même logique que les ennemis dans battlefield_manager
+        ground_level = 655  # Même valeur que dans battlefield_manager
         # Créer un joueur temporaire pour connaître sa hauteur
         temp_player = Player(0, 0)
-        start_y = ground_tile_y * self.level1.tile_size * self.level1.scale_factor + self.level1.map_offset_y - temp_player.rect.height
-            
+        # Même positionnement que les ennemis : ground_level - 100 + 5 pixels vers le bas
+        start_y = ground_level - 100 + 5
+
         # Gestionnaire de joueurs et système de respawn
         self.player_manager = PlayerManager(start_x, start_y, castle_door_x)
-            
+        
         # Gestionnaire de flèches
         self.arrow_manager = ArrowManager(self.screen_width, self.screen_height, castle_door_x)
-            
+        
         # Gestionnaire de champ de bataille
-        map_width_pixels = self.level2.map_width * self.level2.tile_size * self.level2.scale_factor
+        map_width_pixels = self.level1.map_width * self.level1.tile_size * self.level1.scale_factor
         self.battlefield_manager = BattlefieldManager(map_width_pixels, self.screen_height)
+        
+        # Prince sous l'arbre (tile 25, très vers la gauche)
+        # Calculer la position du prince à la tile 25
+        prince_tile_x = 25
+        prince_x = prince_tile_x * self.level1.tile_size * self.level1.scale_factor
+        # Même hauteur que les ennemis + 2 pixels vers le bas
+        prince_y = ground_level - 100 + 2
+        self.prince = Prince(prince_x, prince_y)
+        
+        # Gestionnaire du mini-niveau de protection du prince
+        self.prince_protection = PrinceProtectionManager(prince_x, prince_y, castle_door_x)
+        
 
     def init_level2(self):
         # Calculer la position de la porte du château (approximativement 80% de la largeur de la map)

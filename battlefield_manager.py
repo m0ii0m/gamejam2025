@@ -56,8 +56,8 @@ class BattlefieldManager:
         # Nettoyer les morts (après un délai)
         self.clean_dead_units()
         
-        # Spawner de nouveaux combattants
-        if self.spawn_timer >= self.spawn_interval:
+        # Spawner de nouveaux combattants (seulement si on n'est pas en train de nettoyer)
+        if self.spawn_timer >= self.spawn_interval and not hasattr(self, 'clearing_soldiers'):
             self.spawn_new_units()
             self.spawn_timer = 0
             
@@ -68,6 +68,74 @@ class BattlefieldManager:
         # Mettre à jour tous les ennemis bleus - PAS DE COLLISION ENTRE ENNEMIS
         for enemy in self.blue_enemies[:]:
             enemy.update(collision_tiles, self.red_enemies, self.blue_enemies, player=None)  # Pas de joueur
+            
+    def should_draw_warriors(self, prince_protection_state, current_prince_x):
+        """Détermine si les warriors doivent être dessinés (disparaissent à la tile 58)"""
+        tile_58_x = 58 * 16 * 2.5  # Tile 58 en pixels
+        if prince_protection_state in ["disappearing", "black_screen", "final_sequence"]:
+            return False  # Ne pas dessiner pendant ces états
+        if current_prince_x >= tile_58_x:
+            return False  # Ne pas dessiner après la tile 58
+        return True
+    
+    def clear_soldiers_for_prince_return(self, prince_protection_state, current_prince_x):
+        """Supprime progressivement tous les soldats bleus et rouges quand le prince revient à l'extérieur"""
+        tile_58_x = 58 * 16 * 2.5  # Tile 58 en pixels
+        
+        # Déclencher le nettoyage quand le prince atteint la tile 58 ou est dans des états avancés
+        if (prince_protection_state in ["zoom_on_prince", "dezoom_reveal_enemies", "final_sequence"] or 
+            current_prince_x >= tile_58_x):
+            
+            # Initialiser le nettoyage progressif si pas encore fait
+            if not hasattr(self, 'clearing_soldiers'):
+                self.clearing_soldiers = True
+                self.clear_timer = 0
+                self.clear_phase = 0
+                print("Début du nettoyage progressif des soldats du battlefield principal...")
+            
+            # Continuer le nettoyage progressif
+            if hasattr(self, 'clearing_soldiers') and self.clearing_soldiers:
+                self.clear_timer += 1
+                
+                # Phase 1 : Supprimer 1/3 des soldats rouges (après 30 frames)
+                if self.clear_phase == 0 and self.clear_timer >= 30:
+                    soldiers_to_remove = len(self.red_enemies) // 3
+                    for i in range(min(soldiers_to_remove, len(self.red_enemies))):
+                        if self.red_enemies:
+                            self.red_enemies.pop(0)
+                    print(f"Phase 1: {soldiers_to_remove} soldats rouges supprimés. Restants: {len(self.red_enemies)}")
+                    self.clear_phase = 1
+                    self.clear_timer = 0
+                
+                # Phase 2 : Supprimer 1/3 des soldats bleus (après 20 frames)
+                elif self.clear_phase == 1 and self.clear_timer >= 20:
+                    soldiers_to_remove = len(self.blue_enemies) // 3
+                    for i in range(min(soldiers_to_remove, len(self.blue_enemies))):
+                        if self.blue_enemies:
+                            self.blue_enemies.pop(0)
+                    print(f"Phase 2: {soldiers_to_remove} soldats bleus supprimés. Restants: {len(self.blue_enemies)}")
+                    self.clear_phase = 2
+                    self.clear_timer = 0
+                
+                # Phase 3 : Supprimer le reste des soldats rouges (après 20 frames)
+                elif self.clear_phase == 2 and self.clear_timer >= 20:
+                    remaining_red = len(self.red_enemies)
+                    self.red_enemies.clear()
+                    print(f"Phase 3: {remaining_red} soldats rouges finaux supprimés.")
+                    self.clear_phase = 3
+                    self.clear_timer = 0
+                
+                # Phase 4 : Supprimer le reste des soldats bleus (après 15 frames)
+                elif self.clear_phase == 3 and self.clear_timer >= 15:
+                    remaining_blue = len(self.blue_enemies)
+                    self.blue_enemies.clear()
+                    print(f"Phase 4: {remaining_blue} soldats bleus finaux supprimés.")
+                    print("Nettoyage progressif du battlefield principal terminé !")
+                    
+                    # Nettoyer les variables de nettoyage
+                    self.clearing_soldiers = False
+                    delattr(self, 'clear_timer')
+                    delattr(self, 'clear_phase')
             
     def clean_dead_units(self):
         """Nettoie les unités mortes après un délai"""
@@ -126,15 +194,22 @@ class BattlefieldManager:
                     
         return nearby_red, nearby_blue
         
-    def draw(self, screen, camera_x, camera_y):
+    def draw(self, screen, camera_x, camera_y, prince_protection_state="waiting", current_prince_x=0):
         """Dessine tous les combattants"""
-        # Dessiner tous les ennemis rouges
-        for enemy in self.red_enemies:
-            enemy.draw(screen, camera_x, camera_y)
-            
-        # Dessiner tous les ennemis bleus
-        for enemy in self.blue_enemies:
-            enemy.draw(screen, camera_x, camera_y)
+        # Appliquer le nettoyage progressif si nécessaire
+        self.clear_soldiers_for_prince_return(prince_protection_state, current_prince_x)
+        
+        # Vérifier si les warriors doivent être dessinés
+        should_draw = self.should_draw_warriors(prince_protection_state, current_prince_x)
+        
+        if should_draw:
+            # Dessiner tous les ennemis rouges
+            for enemy in self.red_enemies:
+                enemy.draw(screen, camera_x, camera_y)
+                
+            # Dessiner tous les ennemis bleus
+            for enemy in self.blue_enemies:
+                enemy.draw(screen, camera_x, camera_y)
             
     def draw_battle_ui(self, screen):
         """Interface de bataille supprimée selon la demande"""

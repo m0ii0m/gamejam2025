@@ -57,19 +57,21 @@ class PlayerManager:
         
         if self.new_player is None:
             # Créer le nouveau joueur qui arrive de la droite
-            spawn_x = self.castle_door_x + 200  # Commencer hors écran à droite
+            spawn_x = self.castle_door_x + 400  # Commencer hors écran à droite
+            # Utiliser la même position Y que le spawn initial pour éviter d'être dans le sol
             self.new_player = Player(spawn_x, self.initial_spawn_y)
             
         # Le nouveau joueur se déplace automatiquement vers la position du corps
         target_x = self.dead_bodies[-1].rect.x if self.dead_bodies else self.initial_spawn_x
         
         if self.new_player.rect.x > target_x:  # S'arrêter exactement à la position du corps
-            self.new_player.rect.x -= 3  # Vitesse d'approche
+            self.new_player.rect.x -= 6  # Vitesse d'approche
             self.new_player.current_animation = "run"
             self.new_player.facing_right = False
         else:
             # Le nouveau joueur est arrivé exactement à la position du corps mort
-            self.new_player.rect.x = target_x  # Position exacte
+            self.new_player.rect.x = target_x  # Position exacte en X
+            self.new_player.rect.y = self.initial_spawn_y  # Mais garder la Y du spawn initial
             self.new_player.current_animation = "idle"
             self.current_player = self.new_player
             self.new_player = None

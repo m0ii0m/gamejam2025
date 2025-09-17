@@ -13,11 +13,13 @@ class Player:
 
         self.rect = pygame.Rect(x, y, 75, 75)  # Taille du joueur ajustée pour scale 2.34 (75x75)
         self.speed = 5
-        self.jump_speed = -15
-        self.gravity = 0.8
+        self.jump_speed = -15  # Réduit de -15 à -12 pour un saut moins haut
+        self.gravity = 0.9
         self.velocity_y = 0
         self.on_ground = False
         self.facing_right = True
+        
+
         
         # Animation
         self.animation_timer = 0
@@ -51,17 +53,17 @@ class Player:
         self.load_sprites()
         
     def load_sprites(self):
-        """Charge tous les sprites du prince"""
-        sprite_path = "assets/Sprites/prince/"
+        """Charge tous les sprites d'ennemi avec teinte bleue pour le joueur"""
+        sprite_path = "assets/Sprites/ennemy/"
         
-        # Chargement des différentes animations
+        # Chargement des différentes animations (utilise les sprites d'ennemi)
         animations = {
-            "idle": {"type": "folder", "path": "idle", "count": 8, "loop": True},
-            "run": {"type": "folder", "path": "run", "count": 8, "loop": True},
-            "jump": {"type": "folder", "path": "jump", "count": 2, "loop": False},
-            "fall": {"type": "folder", "path": "fall", "count": 2, "loop": True},
-            "takehit": {"type": "folder", "path": "takehit", "count": 4, "loop": False},
-            "death": {"type": "folder", "path": "death", "count": 6, "loop": False}
+            "idle": {"type": "folder", "path": "idle", "count": 6, "loop": True},      # 6 frames
+            "run": {"type": "folder", "path": "run", "count": 8, "loop": True},        # 8 frames
+            "jump": {"type": "folder", "path": "jump", "count": 2, "loop": False},     # 2 frames
+            "fall": {"type": "folder", "path": "fall", "count": 2, "loop": True},      # 2 frames
+            "takehit": {"type": "folder", "path": "hit", "count": 3, "loop": False},   # 3 frames (utilise "hit")
+            "death": {"type": "folder", "path": "death", "count": 9, "loop": False}    # 9 frames
         }
         
         for anim_name, anim_config in animations.items():
@@ -69,15 +71,21 @@ class Player:
                 frames = []
                 
                 if anim_config["type"] == "folder":
-                    # Charger des fichiers individuels depuis un dossier
-                    folder_path = os.path.join(sprite_path, anim_config["path"])
-                    for i in range(1, anim_config["count"] + 1):
-                        filename = f"{anim_name}{i}.png"
-                        full_path = os.path.join(folder_path, filename)
-                        frame = pygame.image.load(full_path).convert_alpha()
-                        # Redimensionner la frame à 75x75 (ajusté pour scale 2.34)
-                        frame = pygame.transform.scale(frame, (75, 75))
-                        frames.append(frame)
+                        # Charger des fichiers individuels depuis un dossier
+                        folder_path = os.path.join(sprite_path, anim_config["path"])
+                        for i in range(1, anim_config["count"] + 1):
+                            # Pour takehit, utiliser les fichiers "hit" du dossier "hit"
+                            if anim_name == "takehit":
+                                filename = f"hit{i}.png"
+                            else:
+                                filename = f"{anim_name}{i}.png"
+                            full_path = os.path.join(folder_path, filename)
+                            frame = pygame.image.load(full_path).convert_alpha()
+                            # Redimensionner la frame à 75x75 (ajusté pour scale 2.34)
+                            frame = pygame.transform.scale(frame, (75, 75))
+                            # Appliquer une teinte bleue claire pour distinguer le joueur
+                            frame = self.apply_blue_tint(frame)
+                            frames.append(frame)
                 
                 elif anim_config["type"] == "sheet":
                     # Charger depuis une sprite sheet
@@ -119,8 +127,26 @@ class Player:
         
         return frames
     
+    def apply_blue_tint(self, surface):
+        """Applique une teinte bleue claire au sprite"""
+        # Créer une surface avec la même taille
+        tinted_surface = pygame.Surface(surface.get_size(), pygame.SRCALPHA)
+        
+        # Copier l'image originale
+        tinted_surface.blit(surface, (0, 0))
+        
+        # Créer un overlay bleu clair
+        blue_overlay = pygame.Surface(surface.get_size(), pygame.SRCALPHA)
+        blue_overlay.fill((100, 150, 255, 80))  # Bleu clair avec transparence
+        
+        # Appliquer la teinte avec BLEND_MULT pour assombrir légèrement
+        tinted_surface.blit(blue_overlay, (0, 0), special_flags=pygame.BLEND_MULT)
+        
+        return tinted_surface
+    
     def update(self, keys, collision_tiles):
         """Met à jour le joueur"""
+        
         # Gestion de l'invulnérabilité
         jump = pygame.mixer.Sound("./assets/sons/jump.wav")
         footstep = pygame.mixer.Sound("./assets/sons/footstep.wav")
@@ -134,6 +160,7 @@ class Player:
         # Gestion des états spéciaux
         if self.is_dying:
             # Le joueur tombe jusqu'au sol puis reste mort
+            print(f"Joueur en train de mourir - frame {self.animation_frame}")
             self.velocity_y += self.gravity
             self.rect.y += self.velocity_y
             
@@ -146,6 +173,7 @@ class Player:
                     self.death_fall_complete = True
                     self.is_dead = True
                     self.is_dying = False
+                    print("Joueur mort - animation de mort terminée")
                     break
             
             self.update_animation()
@@ -309,6 +337,7 @@ class Player:
     def die(self):
         """Déclenche le processus de mort avec chute"""
         if not self.is_dead and not self.is_dying:
+            print("Le joueur commence à mourir - animation de mort")
             self.is_dying = True
             self.is_alive = False
             self.death_timer = 0
@@ -337,7 +366,7 @@ class Player:
         self.animation_finished = False
     
     def draw(self, screen, x, y):
-        """Dessine le joueur avec effet de clignotement si invulnérable"""
+        """Dessine le joueur avec effet de clignotement si invulnérable ou en esquive"""
         if self.current_animation in self.sprites and self.sprites[self.current_animation]:
             # Protection contre l'index hors limites
             max_frame = len(self.sprites[self.current_animation]) - 1

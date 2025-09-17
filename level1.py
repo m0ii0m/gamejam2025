@@ -1,6 +1,7 @@
 import pygame
 import xml.etree.ElementTree as ET
 import os
+from parallax_bg import ParallaxBg
 
 def hex_to_rgb(hex_color):
     """Convertit une couleur hexadécimale en tuple RGB"""
@@ -94,11 +95,11 @@ class Level1:
         self.collision_tiles = []
         
         # Chargement d'un background fixe (pas de parallax)
-        self.background = None
+        self.background = ParallaxBg('./assets/backgrounds/level1/', (self.screen_width, self.screen_height), cloud_layers=[2, 3])
         
         self.load_tileset()
         self.load_map()
-        self.load_backgrounds()
+        #self.load_backgrounds()
     
     def load_tileset(self):
         """Charge le tileset depuis le fichier PNG"""
@@ -334,16 +335,10 @@ class Level1:
         
         # Dessiner le background fixe (pas de parallax)
         if self.background:
-            # Centrer le background sur l'écran
-            bg_width = self.background.get_width()
-            bg_height = self.background.get_height()
-            
-            # Centrer horizontalement et verticalement
-            bg_x = (self.screen_width - bg_width) // 2
-            bg_y = (self.screen_height - bg_height) // 2
-            
-            screen.blit(self.background, (bg_x, bg_y))
-        
+            self.background.update()
+            self.background.draw(screen, camera_x)
+        else:
+            screen.fill((0, 0, 0))
         # Dessiner la tilemap par-dessus (layers background seulement)
         self.draw_background_tilemap(screen, camera_x, camera_y)
     

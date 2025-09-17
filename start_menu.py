@@ -62,7 +62,6 @@ class StartMenu:
             button.update(mouse_pos, mouse_click)
 
     def draw(self, surface):
-        #surface.blit(self.bg_image, (0, 0))
         self.background.update()
         self.background.draw(surface, 0)
         surface.blit(self.title_shadow_text, self.title_shadow_rect)

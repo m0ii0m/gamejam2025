@@ -30,49 +30,6 @@ class Game:
         self.level1 = Level1(self.screen)
         self.level2 = Level2(self.screen)
         
-        # Calculer la position de la porte du château (approximativement 80% de la largeur de la map)
-        map_width_pixels = self.level1.map_width * self.level1.tile_size * self.level1.scale_factor
-        
-        if (self.game_state == "level1"):
-            castle_door_x = map_width_pixels * 0.8  # Position approximative de la porte
-            # Position de spawn initiale du joueur (côté droit)
-            start_x = map_width_pixels - 300  # 300 pixels avant la fin de la map
-
-            # Position Y : Sur le sol (ligne 18-19 de la tilemap selon l'image)
-            ground_tile_y = 17  # Ligne du sol dans la tilemap
-
-            # Créer un joueur temporaire pour connaître sa hauteur
-            temp_player = Player(0, 0)
-            start_y = ground_tile_y * self.level1.tile_size * self.level1.scale_factor + self.level1.map_offset_y - temp_player.rect.height
-            
-            # Gestionnaire de joueurs et système de respawn
-            self.player_manager = PlayerManager(start_x, start_y, castle_door_x)
-            
-            # Gestionnaire de flèches
-            self.arrow_manager = ArrowManager(self.screen_width, self.screen_height, castle_door_x)
-            
-            # Gestionnaire de champ de bataille
-            map_width_pixels = self.level2.map_width * self.level2.tile_size * self.level2.scale_factor
-            self.battlefield_manager = BattlefieldManager(map_width_pixels, self.screen_height)
-        else:
-            firecamp_x = map_width_pixels * 0.1  # Position approximative du camp de base
-
-            start_x = firecamp_x + 50
-
-            
-            # Position Y : Sur le sol (ligne 18-19 de la tilemap selon l'image)
-            ground_tile_y = 17  # Ligne du sol dans la tilemap
-
-            # Créer un joueur temporaire pour connaître sa hauteur
-            temp_player = Player(0, 0)
-            start_y = ground_tile_y * self.level1.tile_size * self.level1.scale_factor + self.level1.map_offset_y - temp_player.rect.height
-            
-            # Gestionnaire de joueurs et système de respawn
-            self.player_manager = PlayerManager2(start_x, start_y)
-
-        
-       
-        
         # Camera
         self.camera_x = 0
         self.camera_y = 0
@@ -91,6 +48,7 @@ class Game:
         )
 
     def start_game_function(self):
+        self.init_level1()
         self.game_state = "level1"
 
     def show_credits_function(self):
@@ -237,4 +195,55 @@ class Game:
         
         # Dessiner le gestionnaire de joueurs (joueur actuel + corps morts) AU PREMIER PLAN
         self.player_manager.draw(self.screen, self.camera_x, self.camera_y)
+
+    def init_level1(self):
+        # Calculer la position de la porte du château (approximativement 80% de la largeur de la map)
+        map_width_pixels = self.level1.map_width * self.level1.tile_size * self.level1.scale_factor
+
+        castle_door_x = map_width_pixels * 0.8  # Position approximative de la porte
+        # Position de spawn initiale du joueur (côté droit)
+        start_x = map_width_pixels - 300  # 300 pixels avant la fin de la map
+        # Position Y : Sur le sol (ligne 18-19 de la tilemap selon l'image)
+        ground_tile_y = 17  # Ligne du sol dans la tilemap
+
+        # Créer un joueur temporaire pour connaître sa hauteur
+        temp_player = Player(0, 0)
+        start_y = ground_tile_y * self.level1.tile_size * self.level1.scale_factor + self.level1.map_offset_y - temp_player.rect.height
+            
+        # Gestionnaire de joueurs et système de respawn
+        self.player_manager = PlayerManager(start_x, start_y, castle_door_x)
+            
+        # Gestionnaire de flèches
+        self.arrow_manager = ArrowManager(self.screen_width, self.screen_height, castle_door_x)
+            
+        # Gestionnaire de champ de bataille
+        map_width_pixels = self.level2.map_width * self.level2.tile_size * self.level2.scale_factor
+        self.battlefield_manager = BattlefieldManager(map_width_pixels, self.screen_height)
+
+    def init_level2(self):
+        # Calculer la position de la porte du château (approximativement 80% de la largeur de la map)
+        map_width_pixels = self.level1.map_width * self.level1.tile_size * self.level1.scale_factor
+        firecamp_x = map_width_pixels * 0.1  # Position approximative du camp de base
+
+        start_x = firecamp_x + 50
+
+        # Position Y : Sur le sol (ligne 18-19 de la tilemap selon l'image)
+        ground_tile_y = 17  # Ligne du sol dans la tilemap
+
+        # Créer un joueur temporaire pour connaître sa hauteur
+        temp_player = Player(0, 0)
+        start_y = ground_tile_y * self.level1.tile_size * self.level1.scale_factor + self.level1.map_offset_y - temp_player.rect.height
+
+        # Gestionnaire de joueurs et système de respawn
+        self.player_manager = PlayerManager2(start_x, start_y)
+
+        # Position Y : Sur le sol (ligne 18-19 de la tilemap selon l'image)
+        ground_tile_y = 17  # Ligne du sol dans la tilemap
+
+        # Créer un joueur temporaire pour connaître sa hauteur
+        temp_player = Player(0, 0)
+        start_y = ground_tile_y * self.level1.tile_size * self.level1.scale_factor + self.level1.map_offset_y - temp_player.rect.height
+            
+        # Gestionnaire de joueurs et système de respawn
+        self.player_manager = PlayerManager2(start_x, start_y)
         

@@ -3,7 +3,32 @@ import os
 import random
 
 class Warrior:
+    # Sons partagés pour tous les warriors
+    _sounds_loaded = False
+    _gasp_sound = None
+    _paper_sound = None
+    
+    @classmethod
+    def load_sounds(cls):
+        """Charge les sons une seule fois"""
+        if not cls._sounds_loaded:
+            try:
+                pygame.mixer.init()
+                cls._gasp_sound = pygame.mixer.Sound("assets/sons/gasp.mp3")
+                cls._paper_sound = pygame.mixer.Sound("assets/sons/paper.mp3")
+                # Ajuster le volume si nécessaire
+                cls._gasp_sound.set_volume(0.7)
+                cls._paper_sound.set_volume(0.6)
+                cls._sounds_loaded = True
+            except pygame.error as e:
+                print(f"Erreur lors du chargement des sons warrior: {e}")
+                cls._gasp_sound = None
+                cls._paper_sound = None
+                cls._sounds_loaded = True
     def __init__(self, x, y):
+        # Charger les sons si pas déjà fait
+        Warrior.load_sounds()
+        
         self.rect = pygame.Rect(x, y, 75, 75)  # Taille similaire au joueur
         self.speed = random.uniform(2, 4)  # Vitesse légèrement plus rapide que les ennemis
         self.jump_speed = -12
@@ -29,6 +54,10 @@ class Warrior:
         self.attack_timer = 0
         self.hit_timer = 0
         self.death_timer = 0
+        
+        # Sons de mort
+        self.death_sounds_played = False
+        self.paper_timer = 0  # Timer pour jouer paper.mp3 1 seconde après gasp
         self.attack_cooldown = 0
         
         # IA comportementale - Plus statique
@@ -86,6 +115,21 @@ class Warrior:
         """Met à jour le warrior avec IA automatique"""
         if self.is_dead:
             self.death_timer += 1
+            
+            # Gérer les sons de mort
+            if not self.death_sounds_played:
+                # Jouer gasp immédiatement
+                if Warrior._gasp_sound:
+                    Warrior._gasp_sound.play()
+                self.death_sounds_played = True
+                self.paper_timer = 60  # 1 seconde à 60 FPS
+            
+            # Jouer paper.mp3 après 1 seconde
+            if self.paper_timer > 0:
+                self.paper_timer -= 1
+                if self.paper_timer == 0 and Warrior._paper_sound:
+                    Warrior._paper_sound.play()
+            
             self.update_animation()
             return
             

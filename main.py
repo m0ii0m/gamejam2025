@@ -12,7 +12,7 @@ screen = pygame.display.set_mode((1200, 750))
 
 # Défini l'horloge du jeu
 clock = pygame.time.Clock()
-IPS = 45
+IPS = 60
 game = Game(screen)
 
 running = True

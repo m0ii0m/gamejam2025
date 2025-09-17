@@ -28,6 +28,10 @@ class ArrowDefenseScene(Scene):
         self.elapsed = 0.0
         self.win = False
         self.lose = False
+        
+        # Cooldown entre flèches individuelles (0.5 secondes)
+        self.arrow_cooldown = 0.5
+        self.last_arrow_time = 0.0
 
     def reset(self):
         self.prince.x = WIDTH - 280
@@ -39,6 +43,7 @@ class ArrowDefenseScene(Scene):
         self.elapsed = 0.0
         self.win = False
         self.lose = False
+        self.last_arrow_time = 0.0
 
     def handle_event(self, event):
         if event.type == pg.KEYDOWN:
@@ -73,6 +78,9 @@ class ArrowDefenseScene(Scene):
         self.elapsed += dt
         if self.drop_timer > 0:
             self.drop_timer -= dt
+            
+        # Mettre à jour le cooldown des flèches
+        self.last_arrow_time += dt
 
         keys = pg.key.get_pressed()
         if keys[pg.K_LEFT] or keys[pg.K_a]:
@@ -89,8 +97,15 @@ class ArrowDefenseScene(Scene):
         interval = max(0.35, self.base_spawn_interval - min(0.5, self.elapsed * 0.03))
         if self.spawn_timer >= interval:
             self.spawn_timer = 0.0
-            for _ in range(1 + (1 if self.elapsed > 8 else 0)):
-                self.spawn_arrow()
+            count = 1 + (1 if self.elapsed > 8 else 0)
+            arrows_spawned = 0
+            for _ in range(count):
+                # Vérifier le cooldown avant de spawner chaque flèche
+                if self.last_arrow_time >= self.arrow_cooldown:
+                    self.spawn_arrow()
+                    self.last_arrow_time = 0.0  # Reset du cooldown
+                    arrows_spawned += 1
+                    break  # Une seule flèche par cycle pour respecter le cooldown
 
         for a in self.arrows:
             a["x"] += a["vx"] * dt

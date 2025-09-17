@@ -56,9 +56,9 @@ class ThroneScene:
 				if snap_y is None or rect.top < snap_y:
 					snap_y = rect.top
 		if snap_y is not None:
-			self.player.rect.y = snap_y - self.player.rect.height
+			self.player.rect.y = snap_y - self.player.rect.height - 10  # Ajout de -10 pour éviter d'être dans le sol
 		else:
-			self.player.rect.y = ground_guess_y
+			self.player.rect.y = ground_guess_y - 10  # Ajout de -10 pour éviter d'être dans le sol
 
 		# Target near the right side (throne area visually)
 		self.target_x = self.map_width * self.tile_px - 58 * self.tile_px

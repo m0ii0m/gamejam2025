@@ -147,6 +147,14 @@ class Player:
     def update(self, keys, collision_tiles):
         """Met à jour le joueur"""
         
+        # Log de debug pour la hauteur du joueur (toutes les 60 frames = 1 seconde)
+        if not hasattr(self, 'debug_timer'):
+            self.debug_timer = 0
+        self.debug_timer += 1
+        if self.debug_timer >= 60 and not self.is_dead:  # Log toutes les secondes si vivant
+            print(f"[DEBUG] Position joueur - X: {self.rect.x}, Y: {self.rect.y}, Bottom: {self.rect.bottom}")
+            self.debug_timer = 0
+        
         # Gestion de l'invulnérabilité
         jump = pygame.mixer.Sound("./assets/sons/jump.wav")
         footstep = pygame.mixer.Sound("./assets/sons/footstep.wav")
@@ -167,7 +175,7 @@ class Player:
             # Vérifier collision avec le sol
             for tile_rect in collision_tiles:
                 if self.rect.colliderect(tile_rect) and self.velocity_y > 0:
-                    self.rect.bottom = tile_rect.top
+                    self.rect.bottom = tile_rect.top + 5  # Ajout de +5 pour cohérence avec la position de vie
                     self.velocity_y = 0
                     self.on_ground = True
                     self.death_fall_complete = True
@@ -262,7 +270,7 @@ class Player:
         for tile_rect in collision_tiles:
             if self.rect.colliderect(tile_rect):
                 if self.velocity_y > 0:  # Tombant
-                    self.rect.bottom = tile_rect.top
+                    self.rect.bottom = tile_rect.top + 5  # Ajout de +5 pour descendre le joueur de 5 pixels
                     self.velocity_y = 0
                     self.on_ground = True
                 elif self.velocity_y < 0:  # Sautant

@@ -2,9 +2,39 @@ import pygame
 import random
 
 class Arrow:
+    # Charger les sons une seule fois pour toutes les flèches
+    _sounds_loaded = False
+    _flying_sound = None
+    _impact_sound = None
+    
+    @classmethod
+    def load_sounds(cls):
+        """Charge les sons une seule fois"""
+        if not cls._sounds_loaded:
+            try:
+                pygame.mixer.init()
+                cls._flying_sound = pygame.mixer.Sound("assets/sons/arrow-flying.wav")
+                cls._impact_sound = pygame.mixer.Sound("assets/sons/arrow-impact.wav")
+                # Réduire le volume des sons
+                cls._flying_sound.set_volume(0.3)
+                cls._impact_sound.set_volume(0.5)
+                cls._sounds_loaded = True
+            except pygame.error as e:
+                print(f"Erreur lors du chargement des sons de flèche: {e}")
+                cls._flying_sound = None
+                cls._impact_sound = None
+                cls._sounds_loaded = True
+    
     def __init__(self, start_x, start_y, target_x, target_y, arrow_type="normal"):
-        self.rect = pygame.Rect(start_x, start_y, 20, 5)  # Flèche horizontale
+        # Charger les sons si ce n'est pas déjà fait
+        Arrow.load_sounds()
+        
+        self.rect = pygame.Rect(start_x, start_y, 25, 2)  # Flèche encore plus fine et un peu plus courte
         self.arrow_type = arrow_type  # "normal" ou "curtain"
+        
+        # Jouer le son de vol quand la flèche apparaît
+        if Arrow._flying_sound:
+            Arrow._flying_sound.play()
         
         # Calculer la trajectoire vers la cible
         import math
@@ -33,15 +63,16 @@ class Arrow:
         self.is_stuck = False
         self.stuck_timer = 0
         self.stuck_duration = 300  # 5 secondes à 60 FPS
+        self.impact_sound_played = False  # Pour éviter de jouer le son plusieurs fois
         
-        # Créer le sprite de la flèche (orientée vers la droite par défaut)
-        self.image = pygame.Surface((20, 5), pygame.SRCALPHA)  # Surface transparente
-        # Corps de la flèche (horizontal)
-        pygame.draw.rect(self.image, (139, 69, 19), (0, 1, 15, 3))  # Corps bois
+        # Créer le sprite de la flèche fine et longue (orientée vers la droite par défaut)
+        self.image = pygame.Surface((25, 2), pygame.SRCALPHA)  # Surface encore plus fine
+        # Corps de la flèche (horizontal) - très fin
+        pygame.draw.rect(self.image, (139, 69, 19), (0, 0, 20, 2))  # Corps bois très fin
         # Pointe de la flèche
-        pygame.draw.polygon(self.image, (169, 169, 169), [(15, 0), (20, 2), (15, 4)])  # Pointe grise
+        pygame.draw.polygon(self.image, (169, 169, 169), [(20, 0), (25, 1), (20, 2)])  # Pointe grise fine
         # Empennage
-        pygame.draw.polygon(self.image, (100, 50, 0), [(0, 0), (3, 2), (0, 4)])  # Empennage brun
+        pygame.draw.polygon(self.image, (100, 50, 0), [(0, 0), (2, 1), (0, 2)])  # Empennage brun fin
         
     def update(self):
         """Met à jour la position de la flèche"""
@@ -68,6 +99,12 @@ class Arrow:
         
     def stick_to_ground(self, ground_y):
         """Plante la flèche au sol"""
+        if not self.impact_sound_played:
+            # Jouer le son d'impact une seule fois
+            if Arrow._impact_sound:
+                Arrow._impact_sound.play()
+            self.impact_sound_played = True
+            
         self.is_stuck = True
         self.rect.y = ground_y - self.rect.height
         self.velocity_x = 0
@@ -77,7 +114,7 @@ class Arrow:
         self.rotation = 90
         
     def draw(self, screen, camera_x, camera_y):
-        """Dessine la flèche avec une orientation correcte"""
+        """Dessine la flèche avec une orientation correcte et un contour blanc"""
         # Position à l'écran
         screen_x = self.rect.x - camera_x
         screen_y = self.rect.y - camera_y
@@ -89,7 +126,28 @@ class Arrow:
         rotated_image = pygame.transform.rotate(self.image, -rotation_angle)  # Négatif pour rotation dans le bon sens
         rotated_rect = rotated_image.get_rect(center=(screen_x + self.rect.width//2, screen_y + self.rect.height//2))
         
-        screen.blit(rotated_image, rotated_rect)
+        # Créer un contour blanc autour de la flèche
+        # Créer une version agrandie de l'image pour le contour
+        outline_size = 2  # Épaisseur du contour
+        outline_image = pygame.Surface((rotated_image.get_width() + outline_size * 2, 
+                                       rotated_image.get_height() + outline_size * 2), pygame.SRCALPHA)
+        
+        # Dessiner le contour blanc en décalant l'image dans toutes les directions
+        for dx in range(-outline_size, outline_size + 1):
+            for dy in range(-outline_size, outline_size + 1):
+                if dx != 0 or dy != 0:  # Ne pas dessiner au centre
+                    # Créer une version blanche de l'image
+                    white_image = rotated_image.copy()
+                    white_image.fill((255, 255, 255), special_flags=pygame.BLEND_MULT)
+                    outline_image.blit(white_image, (outline_size + dx, outline_size + dy))
+        
+        # Dessiner l'image originale par-dessus le contour
+        outline_image.blit(rotated_image, (outline_size, outline_size))
+        
+        # Ajuster la position pour centrer le contour
+        outline_rect = outline_image.get_rect(center=(screen_x + self.rect.width//2, screen_y + self.rect.height//2))
+        
+        screen.blit(outline_image, outline_rect)
         
     def is_off_screen(self, screen_height):
         """Vérifie si la flèche est sortie de l'écran ou a atteint sa portée maximale"""
@@ -107,6 +165,10 @@ class ArrowManager:
         self.arrows = []
         self.spawn_timer = 0
         self.spawn_delay = random.randint(30, 60)  # Délai réduit pour plus de flèches
+        
+        # Cooldown entre flèches individuelles (0.5 secondes = 30 frames à 60 FPS)
+        self.arrow_cooldown = 30
+        self.last_arrow_time = 0
         
         # Gestion des types d'attaque
         self.attack_type_timer = 0
@@ -161,6 +223,9 @@ class ArrowManager:
         
     def update(self, player_x, player_y, collision_tiles=None):
         """Met à jour le gestionnaire de flèches"""
+        # Incrémenter le timer pour le cooldown des flèches
+        self.last_arrow_time += 1
+        
         # Gestion du type d'attaque
         self.attack_type_timer += 1
         if self.attack_type_timer >= self.curtain_delay and not self.curtain_active:
@@ -201,13 +266,21 @@ class ArrowManager:
                     self.prepare_arrow_curtain(player_x, player_y)
                     self.next_attack_type = "normal"
                 else:
-                    # Spawner des flèches normales
+                    # Spawner des flèches normales avec cooldown
                     num_arrows = random.randint(2, 4)
+                    arrows_spawned = 0
                     for _ in range(num_arrows):
-                        self.spawn_arrow(player_x, player_y)
-                
-                self.spawn_timer = 0
-                self.spawn_delay = random.randint(40, 80)  # Délai réduit pour plus d'action
+                        # Vérifier le cooldown avant de spawner chaque flèche
+                        if self.last_arrow_time >= self.arrow_cooldown:
+                            self.spawn_arrow(player_x, player_y)
+                            self.last_arrow_time = 0  # Reset du cooldown
+                            arrows_spawned += 1
+                            break  # Une seule flèche par cycle pour respecter le cooldown
+                    
+                    # Si aucune flèche n'a été spawnée à cause du cooldown, ne pas reset le timer
+                    if arrows_spawned > 0:
+                        self.spawn_timer = 0
+                        self.spawn_delay = random.randint(40, 80)  # Délai réduit pour plus d'action
         
         # Mettre à jour toutes les flèches
         for arrow in self.arrows[:]:  # Copie de la liste pour modification sûre

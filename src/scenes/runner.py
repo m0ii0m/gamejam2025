@@ -17,6 +17,10 @@ class RunnerScene(Scene):
         self.arrows = []
         self.spawn_timer = 0.0
         self.spawn_interval = 1.0
+        
+        # Cooldown entre flèches individuelles (0.5 secondes)
+        self.arrow_cooldown = 0.5
+        self.last_arrow_time = 0.0
 
         # Progress towards the castle
         self.distance = 0.0
@@ -37,6 +41,7 @@ class RunnerScene(Scene):
         self.speed = 260.0
         self.alive = True
         self.win = False
+        self.last_arrow_time = 0.0
 
     def spawn_arrow(self):
         x = self.castle_x + 100
@@ -73,13 +78,22 @@ class RunnerScene(Scene):
             self.vel_y = 0
             self.on_ground = True
 
+        # Mettre à jour le cooldown des flèches
+        self.last_arrow_time += dt
+
         self.spawn_timer += dt
         min_interval = max(0.4, self.spawn_interval - (self.distance / self.target_distance) * 0.5)
         if self.spawn_timer >= min_interval:
             self.spawn_timer = 0.0
             count = 1 + (1 if random.random() < 0.25 else 0)
+            arrows_spawned = 0
             for _ in range(count):
-                self.spawn_arrow()
+                # Vérifier le cooldown avant de spawner chaque flèche
+                if self.last_arrow_time >= self.arrow_cooldown:
+                    self.spawn_arrow()
+                    self.last_arrow_time = 0.0  # Reset du cooldown
+                    arrows_spawned += 1
+                    break  # Une seule flèche par cycle pour respecter le cooldown
 
         for a in self.arrows:
             a["x"] += a["vx"] * dt

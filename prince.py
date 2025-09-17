@@ -3,7 +3,7 @@ import os
 
 class Prince:
     def __init__(self, x, y):
-        self.rect = pygame.Rect(x, y, 75, 75)  # Même taille que le joueur
+        self.rect = pygame.Rect(x, y, 100, 100)  # Agrandir de 75x75 à 100x100 pour une meilleure présence
         self.x = x  # Position fixe du prince
         self.y = y
         
@@ -41,8 +41,8 @@ class Prince:
                         full_path = os.path.join(folder_path, filename)
                         if os.path.exists(full_path):
                             frame = pygame.image.load(full_path).convert_alpha()
-                            # Redimensionner la frame à 75x75 
-                            frame = pygame.transform.scale(frame, (75, 75))
+                            # Redimensionner la frame à 100x100 pour correspondre à la hitbox
+                            frame = pygame.transform.scale(frame, (100, 100))
                             frames.append(frame)
                         else:
                             # Si le fichier n'existe pas, essayer sans le numéro d'animation
@@ -50,7 +50,7 @@ class Prince:
                             alt_full_path = os.path.join(folder_path, alt_filename)
                             if os.path.exists(alt_full_path):
                                 frame = pygame.image.load(alt_full_path).convert_alpha()
-                                frame = pygame.transform.scale(frame, (75, 75))
+                                frame = pygame.transform.scale(frame, (100, 100))  # Agrandir à 100x100
                                 frames.append(frame)
                 
                 self.sprites[anim_name] = frames if frames else [self.create_default_sprite()]
@@ -62,10 +62,10 @@ class Prince:
     
     def create_default_sprite(self):
         """Crée un sprite par défaut pour le prince"""
-        default_surface = pygame.Surface((75, 75), pygame.SRCALPHA)
-        # Dessiner un prince simple (rectangle doré)
-        pygame.draw.rect(default_surface, (255, 215, 0), (10, 10, 55, 65))  # Corps doré
-        pygame.draw.circle(default_surface, (255, 220, 177), (37, 25), 12)  # Tête
+        default_surface = pygame.Surface((100, 100), pygame.SRCALPHA)  # Agrandir à 100x100
+        # Dessiner un prince simple (rectangle doré) - proportions ajustées
+        pygame.draw.rect(default_surface, (255, 215, 0), (15, 15, 70, 85))  # Corps doré plus grand
+        pygame.draw.circle(default_surface, (255, 220, 177), (50, 35), 16)  # Tête plus grande
         return default_surface
     
     def update(self):
@@ -81,7 +81,7 @@ class Prince:
                 self.animation_frame = (self.animation_frame + 1) % max_frames
     
     def draw(self, screen, camera_x, camera_y):
-        """Dessine le prince"""
+        """Dessine le prince avec une aura dorée"""
         # Position à l'écran
         screen_x = self.x - camera_x
         screen_y = self.y - camera_y
@@ -98,4 +98,44 @@ class Prince:
             if not self.facing_right:
                 current_sprite = pygame.transform.flip(current_sprite, True, False)
             
+            # Dessiner le prince directement (sans aura)
             screen.blit(current_sprite, (screen_x, screen_y))
+    
+    def draw_golden_aura(self, screen, screen_x, screen_y, sprite):
+        """Dessine une aura dorée animée autour du prince"""
+        import math
+        
+        # Calculer l'animation de pulsation pour les rayons seulement (pas l'intensité)
+        time_factor = self.animation_timer * 0.1  # Vitesse de pulsation
+        aura_intensity = 60  # Intensité constante et visible
+        
+        # Couleurs dorées avec transparence constante
+        golden_colors = [
+            (255, 215, 0, aura_intensity),    # Or pur
+            (255, 223, 0, aura_intensity//2), # Or plus clair
+            (255, 140, 0, aura_intensity//3)  # Or-orange
+        ]
+        
+        # Dessiner plusieurs cercles concentriques pour créer l'effet d'aura
+        center_x = screen_x + sprite.get_width() // 2
+        center_y = screen_y + sprite.get_height() // 2
+        
+        for i, color in enumerate(golden_colors):
+            # Rayon qui pulse légèrement (animation douce)
+            base_radius = 45 + i * 8
+            radius_variation = int(3 * math.sin(time_factor + i))  # Pulsation plus douce
+            radius = base_radius + radius_variation
+            
+            # Créer une surface temporaire pour dessiner l'aura avec transparence
+            aura_surface = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
+            
+            # Dessiner le cercle doré avec dégradé
+            for r in range(radius, 0, -2):
+                alpha = int(color[3] * (radius - r) / radius)
+                if alpha > 0:
+                    pygame.draw.circle(aura_surface, (*color[:3], alpha), 
+                                     (radius, radius), r)
+            
+            # Positionner l'aura centrée sur le prince
+            aura_rect = aura_surface.get_rect(center=(center_x, center_y))
+            screen.blit(aura_surface, aura_rect, special_flags=pygame.BLEND_ALPHA_SDL2)

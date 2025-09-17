@@ -151,6 +151,14 @@ class Game:
         current_player = self.player_manager.get_current_player()
         self.battlefield_manager.update(self.level1.collision_tiles, current_player)
         
+        # Mise à jour du prince (animation idle automatique)
+        if hasattr(self, 'prince'):
+            self.prince.update()
+        
+        # Gestion du volume de la musique basé sur la position du joueur
+        if current_player:
+            self.update_music_volume(current_player.rect.x)
+        
         # Mise à jour de la caméra pour suivre le joueur (ou le prince pendant la protection)
         self.update_camera()
 
@@ -363,14 +371,9 @@ class Game:
         start_x = map_width_pixels - 300  # 300 pixels avant la fin de la map
         
         # Position Y : Utiliser la même logique que les ennemis dans battlefield_manager
-        ground_level = 655  # Même valeur que dans battlefield_manager
-        # Créer un joueur temporaire pour connaître sa hauteur
-        temp_player = Player(0, 0)
-        # Même positionnement que les ennemis : ground_level - 100 + 5 pixels vers le bas
-        start_y = ground_level - 100 + 5
-
+        ground_level = 655  # Valeur de base (ajustement fait dans player.py maintenant)
         # Gestionnaire de joueurs et système de respawn
-        self.player_manager = PlayerManager(start_x, start_y, castle_door_x)
+        self.player_manager = PlayerManager(start_x, ground_level, castle_door_x)
         
         # Gestionnaire de flèches
         self.arrow_manager = ArrowManager(self.screen_width, self.screen_height, castle_door_x)
@@ -383,12 +386,19 @@ class Game:
         # Calculer la position du prince à la tile 25
         prince_tile_x = 25
         prince_x = prince_tile_x * self.level1.tile_size * self.level1.scale_factor
-        # Même hauteur que les ennemis + 2 pixels vers le bas
-        prince_y = ground_level - 100 + 2
+        prince_y = ground_level - 100 - 25  # Baisser le prince sous l'arbre de 25px
         self.prince = Prince(prince_x, prince_y)
         
         # Gestionnaire du mini-niveau de protection du prince
         self.prince_protection = PrinceProtectionManager(prince_x, prince_y, castle_door_x)
+        
+        # Charger et lancer la musique du niveau 1
+        self.setup_level1_music()
+        
+        # Gestion du volume musical basé sur la position (tiles 70 à 62)
+        self.music_volume_base = 0.5  # Volume de base
+        self.music_fade_start_tile = 70  # Début de la baisse de volume (retour à 70)
+        self.music_fade_end_tile = 62   # Fin de la baisse de volume (volume minimal)
         
 
     def init_level2(self):
@@ -408,3 +418,55 @@ class Game:
         # Gestionnaire de joueurs et système de respawn
         self.player_manager = PlayerManager2(start_x, start_y)
         
+    def update_music_volume(self, player_x):
+        """Met à jour le volume de la musique basé sur la position du joueur"""
+        # Convertir la position du joueur en tile
+        player_tile = player_x / (self.level1.tile_size * self.level1.scale_factor)
+        
+        # Vérifier si on est dans la phase de sortie du prince du château (coupe complètement la musique)
+        if (hasattr(self, 'prince_protection') and 
+            self.prince_protection.state in ["zoom_on_prince", "dezoom_reveal_enemies"]):
+            # Pendant la sortie du prince, couper complètement la musique
+            volume = 0.0
+        elif player_tile >= self.music_fade_start_tile:
+            # Au-delà de la tile 70, volume normal
+            volume = self.music_volume_base
+        elif player_tile <= self.music_fade_end_tile:
+            # En deçà de la tile 62, volume à 0 (complètement muet)
+            volume = 0.0
+        else:
+            # Entre les tiles 70 et 62, interpolation linéaire jusqu'à 0
+            fade_range = self.music_fade_start_tile - self.music_fade_end_tile
+            fade_progress = (player_tile - self.music_fade_end_tile) / fade_range
+            volume = self.music_volume_base * fade_progress  # De 0.0 à music_volume_base
+        
+        # Appliquer le volume sur le canal de musique ET sur pygame.mixer.music
+        if hasattr(self.level1, 'music_channel') and hasattr(self.level1, 'music_sound'):
+            self.level1.music_channel.set_volume(volume)
+        pygame.mixer.music.set_volume(volume)
+        
+    def setup_level1_music(self):
+        """Configure et lance la musique du niveau 1"""
+        try:
+            # Créer un canal dédié pour la musique
+            music_channel = pygame.mixer.Channel(0)
+            level1_sound = pygame.mixer.Sound("./assets/sons/musique/Level1.mp3")
+            
+            # Stocker dans level1 pour pouvoir contrôler le volume
+            self.level1.music_channel = music_channel
+            self.level1.music_sound = level1_sound
+            
+            # Lancer la musique en boucle
+            music_channel.play(level1_sound, loops=-1)
+            
+            # Aussi charger avec pygame.mixer.music pour compatibilité
+            pygame.mixer.music.load("./assets/sons/musique/Level1.mp3")
+            pygame.mixer.music.set_volume(0.5)
+            pygame.mixer.music.play(loops=-1)
+            
+            print("Musique du niveau 1 lancée avec succès")
+        except pygame.error as e:
+            print(f"Erreur lors du chargement de la musique du niveau 1: {e}")
+            # Initialiser des valeurs par défaut en cas d'erreur
+            self.level1.music_channel = None
+            self.level1.music_sound = None

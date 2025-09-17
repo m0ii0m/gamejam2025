@@ -57,12 +57,8 @@ class Level1:
         self.collision_tiles = map_info["collision_tiles"]
         self.layer_tintcolors = map_info["layer_tintcolors"]
 
-        channel1 = pygame.mixer.Channel(0)
-
-        level1Sound = pygame.mixer.Sound("./assets/sons/musique/Level1.mp3")
+        # Les propriétés de musique seront définies dans game.py
+        self.music_channel = None
+        self.music_sound = None
         
-        channel1.play(level1Sound, loops=-1) 
-        pygame.mixer.music.load("./assets/sons/musique/Level1.mp3")
-        pygame.mixer.music.set_volume(0.5)  
-        pygame.mixer.music.play()
         #self.load_backgrounds()

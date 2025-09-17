@@ -25,6 +25,7 @@ class PlayerManager:
         
         # Joueur actuel
         self.current_player = Player(initial_x, initial_y)
+        print(f"[DEBUG] Joueur initial créé - X: {initial_x}, Y: {initial_y}")
         
         # Liste des corps morts
         self.dead_bodies = []
@@ -87,6 +88,7 @@ class PlayerManager:
             # Le nouveau joueur est arrivé exactement à la position du corps mort
             self.new_player.rect.x = target_x  # Position exacte en X
             self.new_player.rect.y = self.initial_spawn_y  # Mais garder la Y du spawn initial
+            print(f"[DEBUG] Nouveau joueur respawné - X: {target_x}, Y: {self.initial_spawn_y}")
             self.new_player.current_animation = "idle"
             self.current_player = self.new_player
             self.new_player = None

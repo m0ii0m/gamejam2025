@@ -36,8 +36,8 @@ def draw_text_center(surf, text, size, color, center, font_name=None):
     surf.blit(s, r)
 
 
-def draw_multiline_center(surf, lines, size, color, center, line_gap=8, font_name=None):
-    font = pg.font.SysFont(font_name or "consolas", size)
+def draw_multiline_center(surf, lines, color, center, line_gap=8, font=None):
+    font = font or pg.font.SysFont("Consolas", 26)
     surfaces = [font.render(line, True, color) for line in lines]
     total_h = sum(s.get_height() for s in surfaces) + line_gap * (len(surfaces) - 1)
     top = center[1] - total_h // 2
@@ -45,3 +45,18 @@ def draw_multiline_center(surf, lines, size, color, center, line_gap=8, font_nam
         r = s.get_rect(center=(center[0], top + s.get_height() // 2))
         surf.blit(s, r)
         top += s.get_height() + line_gap
+
+
+def draw_multiline_left(surf, lines, displayed_text, color, center, line_gap=8, font=None):
+    font = font or pg.font.SysFont("Consolas", 26)
+    surfaces = [font.render(line, True, color) for line in lines]
+    total_h = sum(s.get_height() for s in surfaces) + line_gap * (len(surfaces) - 1)
+    max_w = max(s.get_width() for s in surfaces)
+    top = center[1] - total_h // 2
+    left_x = center[0] - max_w // 2
+    for i, line in enumerate(displayed_text):
+        if line:  
+            text_surf = font.render(line, True, color)
+            surf.blit(text_surf, (left_x, top))
+        top += surfaces[i].get_height() + line_gap
+

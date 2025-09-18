@@ -17,7 +17,7 @@ class ProtectorSoldier:
         if not cls._sounds_loaded:
             try:
                 pygame.mixer.init()
-                cls._man_dying_sound = pygame.mixer.Sound("assets/sons/manDying.wav")
+                cls._man_dying_sound = pygame.mixer.Sound("assets/sounds/manDying.wav")
                 # Ajuster le volume si nécessaire
                 cls._man_dying_sound.set_volume(0.7)
                 cls._sounds_loaded = True

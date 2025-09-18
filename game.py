@@ -66,12 +66,11 @@ class Game:
     def start_game_function(self):
         
         from src.scenes.intro import IntroScene
-        # self.intro_scene = IntroScene(self)
-        # self.game_state = "intro"
+        self.intro_scene = IntroScene(self)
+        self.game_state = "intro"
         # self.init_level1()
         # self.game_state = "level1"
-        self.init_level2()
-        self.game_state = "level2"
+
 
     def show_credits_function(self):
         self.game_state = "credits"

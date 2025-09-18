@@ -259,7 +259,7 @@ class Game:
             lines = [
                 "Une fois encore, le prince échappe à ses ennemis.",
                 "Cette fois, ce sont le sacrifice de ses compagnons et la bravoure ",
-                "de son cheval qui lui offrent la vie sauve."
+                "de son cheval qui lui offrent la vie sauve.",
                 "De retour au château royal, il est accueilli en héros.",
                 "",
                 "",

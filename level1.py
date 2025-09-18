@@ -34,7 +34,7 @@ class Level1:
         self.collision_tiles = []
         
         # Chargement d'un background fixe (pas de parallax)
-        self.background = ParallaxBg('./assets/backgrounds/level1/', (self.screen_width, self.screen_height), cloud_layers=[2, 3])
+        self.background = ParallaxBg('./assets/images/backgrounds/level1/', (self.screen_width, self.screen_height), cloud_layers=[2, 3])
         
         self.tiles = load_tileset("assets/maps/level1/DirtBrick_Assets_V5.png", self.tile_size, self.scale_factor, 20)
 

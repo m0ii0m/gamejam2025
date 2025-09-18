@@ -18,8 +18,8 @@ class ProtectorSoldier:
         if not cls._sounds_loaded:
             try:
                 pygame.mixer.init()
-                cls._man_dying_sound = pygame.mixer.Sound("assets/sons/manDying.wav")
-                cls._death_fortnite_sound = pygame.mixer.Sound("assets/sons/deathFortnite.mp3")
+                cls._man_dying_sound = pygame.mixer.Sound("assets/sounds/manDying.wav")
+                cls._death_fortnite_sound = pygame.mixer.Sound("assets/sounds/deathFortnite.mp3")
                 # Ajuster le volume si nécessaire
                 cls._man_dying_sound.set_volume(0.7)
                 cls._death_fortnite_sound.set_volume(0.6)
@@ -116,17 +116,17 @@ class PrinceProtectionManager:
         # Charger les sons
         try:
             pygame.mixer.init()
-            self.haki_sound = pygame.mixer.Sound("assets/sons/haki.mp3")
+            self.haki_sound = pygame.mixer.Sound("assets/sounds/haki.mp3")
             self.haki_sound.set_volume(1.0)  # Volume maximum
-            self.battle_sound = pygame.mixer.Sound("assets/sons/musique/level1_battleSoundonly.mp3")
+            self.battle_sound = pygame.mixer.Sound("assets/sounds/music/level1_battleSoundonly.mp3")
             self.battle_sound.set_volume(0.7)
-            self.sneeze_sound = pygame.mixer.Sound("assets/sons/sneeze.mp3")
+            self.sneeze_sound = pygame.mixer.Sound("assets/sounds/sneeze.mp3")
             self.sneeze_sound.set_volume(1.0)  # Volume maximum
-            self.gasp_sound = pygame.mixer.Sound("assets/sons/gasp.mp3")
+            self.gasp_sound = pygame.mixer.Sound("assets/sounds/gasp.mp3")
             self.gasp_sound.set_volume(1.0)  # Volume maximum
-            self.paper_sound = pygame.mixer.Sound("assets/sons/paper.mp3")
+            self.paper_sound = pygame.mixer.Sound("assets/sounds/paper.mp3")
             self.paper_sound.set_volume(0.6)
-            self.footstep_sound = pygame.mixer.Sound("assets/sons/footstep.wav")
+            self.footstep_sound = pygame.mixer.Sound("assets/sounds/footstep.wav")
             self.footstep_sound.set_volume(0.5)  # Volume modéré pour les pas
         except pygame.error as e:
             print(f"Erreur lors du chargement des sons: {e}")
@@ -383,7 +383,7 @@ class PrinceProtectionManager:
         """Charge les sprites du prince pour l'animation de course et idle"""
         try:
             sprites = {}
-            sprite_path = "assets/Sprites/prince/"
+            sprite_path = "assets/images/sprites/prince/"
             
             # Charger les 8 frames de course
             run_sprites = []

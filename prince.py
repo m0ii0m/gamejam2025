@@ -22,7 +22,7 @@ class Prince:
         
     def load_sprites(self):
         """Charge les sprites du prince depuis le dossier prince"""
-        sprite_path = "assets/Sprites/prince/"
+        sprite_path = "assets/images/sprites/prince/"
         
         # Chargement uniquement de l'animation idle pour le prince statique
         animations = {

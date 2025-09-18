@@ -13,8 +13,8 @@ class Arrow:
         if not cls._sounds_loaded:
             try:
                 pygame.mixer.init()
-                cls._flying_sound = pygame.mixer.Sound("assets/sons/arrow-flying.wav")
-                cls._impact_sound = pygame.mixer.Sound("assets/sons/arrow-impact.wav")
+                cls._flying_sound = pygame.mixer.Sound("assets/sounds/arrow-flying.wav")
+                cls._impact_sound = pygame.mixer.Sound("assets/sounds/arrow-impact.wav")
                 # Réduire le volume des sons
                 cls._flying_sound.set_volume(0.3)
                 cls._impact_sound.set_volume(0.5)

@@ -7,7 +7,7 @@ class StartMenu:
         self.screen_width, self.screen_height = screen_size
 
         # Load assets
-        self.background = ParallaxBg('./assets/backgrounds/start_menu/', screen_size, cloud_layers=[2,3,4])
+        self.background = ParallaxBg('./assets/images/backgrounds/start_menu/', screen_size, cloud_layers=[2,3,4])
         self.bg_image = pygame.image.load(bg_image_path).convert()
         self.bg_image = pygame.transform.scale(self.bg_image, screen_size)
         self.button_image = pygame.image.load(button_image_path).convert_alpha()

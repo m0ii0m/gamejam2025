@@ -5,7 +5,7 @@ import random
 
 class Player:
     def __init__(self, x, y):
-        pygame.mixer.music.load("./assets/sons/jump.wav")
+        pygame.mixer.music.load("./assets/sounds/jump.wav")
         
         pygame.mixer.music.set_volume(0.5)  
         self.footstep_delay = 300
@@ -54,7 +54,7 @@ class Player:
         
     def load_sprites(self):
         """Charge tous les sprites d'ennemi avec teinte bleue pour le joueur"""
-        sprite_path = "assets/Sprites/ennemy/"
+        sprite_path = "assets/images/sprites/ennemy/"
         
         # Chargement des différentes animations (utilise les sprites d'ennemi)
         animations = {
@@ -156,8 +156,8 @@ class Player:
             self.debug_timer = 0
         
         # Gestion de l'invulnérabilité
-        jump = pygame.mixer.Sound("./assets/sons/jump.wav")
-        footstep = pygame.mixer.Sound("./assets/sons/footstep.wav")
+        jump = pygame.mixer.Sound("./assets/sounds/jump.wav")
+        footstep = pygame.mixer.Sound("./assets/sounds/footstep.wav")
 
         if self.invulnerable:
             self.invulnerable_timer += 1
@@ -329,14 +329,14 @@ class Player:
                 self.die()
                 
                 if random.random() < 0.65:
-                    manDyingSound = pygame.mixer.Sound("./assets/sons/manDying.wav")
+                    manDyingSound = pygame.mixer.Sound("./assets/sounds/manDying.wav")
                     manDyingSound.play()
                 else:
-                    fortniteSound = pygame.mixer.Sound("./assets/sons/deathFortnite.mp3")
+                    fortniteSound = pygame.mixer.Sound("./assets/sounds/deathFortnite.mp3")
                     fortniteSound.play()
             else:
                 self.take_hit()
-                manStrugglingSound = pygame.mixer.Sound("./assets/sons/manStruggling.wav")
+                manStrugglingSound = pygame.mixer.Sound("./assets/sounds/manStruggling.wav")
                 manStrugglingSound.play()
             
             return True

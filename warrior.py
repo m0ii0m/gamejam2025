@@ -14,8 +14,8 @@ class Warrior:
         if not cls._sounds_loaded:
             try:
                 pygame.mixer.init()
-                cls._gasp_sound = pygame.mixer.Sound("assets/sons/gasp.mp3")
-                cls._paper_sound = pygame.mixer.Sound("assets/sons/paper.mp3")
+                cls._gasp_sound = pygame.mixer.Sound("assets/sounds/gasp.mp3")
+                cls._paper_sound = pygame.mixer.Sound("assets/sounds/paper.mp3")
                 # Ajuster le volume si nécessaire
                 cls._gasp_sound.set_volume(0.7)
                 cls._paper_sound.set_volume(0.6)
@@ -74,7 +74,7 @@ class Warrior:
         
     def load_sprites(self):
         """Charge tous les sprites du warrior"""
-        sprite_path = "assets/Sprites/warrior/"
+        sprite_path = "assets/images/sprites/warrior/"
         
         animations = {
             "idle": {"path": "idle", "count": 10, "loop": True},

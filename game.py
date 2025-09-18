@@ -38,8 +38,8 @@ class Game:
         self.start_menu = StartMenu(
             screen_size=(self.screen_width, self.screen_height),
             font_path="./assets/fonts/PressStart2P-Regular.ttf",
-            bg_image_path="./assets/backgrounds/level1/1.png",
-            button_image_path="./assets/gui/buttons/button.png",
+            bg_image_path="./assets/images/backgrounds/level1/1.png",
+            button_image_path="./assets/images/gui/buttons/button.png",
             callbacks={
                 "start": self.start_game_function,
                 "credits": self.show_credits_function,
@@ -48,10 +48,10 @@ class Game:
         )
 
     def start_game_function(self):
-        self.init_level2()
-        self.game_state = "level2"
-        # self.init_level1()
-        # self.game_state = "level1"
+        #self.init_level2()
+        #self.game_state = "level2"
+        self.init_level1()
+        self.game_state = "level1"
 
     def show_credits_function(self):
         pass
@@ -452,7 +452,7 @@ class Game:
         try:
             # Créer un canal dédié pour la musique
             music_channel = pygame.mixer.Channel(0)
-            level1_sound = pygame.mixer.Sound("./assets/sons/musique/Level1.mp3")
+            level1_sound = pygame.mixer.Sound("./assets/sounds/music/Level1.mp3")
             
             # Stocker dans level1 pour pouvoir contrôler le volume
             self.level1.music_channel = music_channel
@@ -462,7 +462,7 @@ class Game:
             music_channel.play(level1_sound, loops=-1)
             
             # Aussi charger avec pygame.mixer.music pour compatibilité
-            pygame.mixer.music.load("./assets/sons/musique/Level1.mp3")
+            pygame.mixer.music.load("./assets/sounds/music/Level1.mp3")
             pygame.mixer.music.set_volume(0.5)
             pygame.mixer.music.play(loops=-1)
             

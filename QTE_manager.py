@@ -33,8 +33,8 @@ class QTEManager:
 
         self.key_pressed = False
 
-        self.key_q_img = pygame.image.load("assets/Sprites/key/q1.png").convert_alpha()
-        self.key_d_img = pygame.image.load("assets/Sprites/key/d1.png").convert_alpha()
+        self.key_q_img = pygame.image.load("assets/images/sprites/key/q1.png").convert_alpha()
+        self.key_d_img = pygame.image.load("assets/images/sprites/key/d1.png").convert_alpha()
 
 
     def start_round(self):

@@ -59,7 +59,7 @@ class Enemy:
         
     def load_sprites(self):
         """Charge tous les sprites de l'ennemi"""
-        sprite_path = "assets/Sprites/ennemy/"
+        sprite_path = "assets/images/sprites/ennemy/"
         
         animations = {
             "idle": {"path": "idle", "count": 4, "loop": True},

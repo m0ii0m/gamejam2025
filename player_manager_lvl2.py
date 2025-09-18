@@ -33,7 +33,7 @@ class PlayerManager2:
         self.horse_timer = 120 
         self.horse_score = 0
         
-        self.key_e_img = pygame.image.load("assets/Sprites/key/e1.png").convert_alpha()
+        self.key_e_img = pygame.image.load("assets/images/sprites/key/e1.png").convert_alpha()
         
     def update(self, keys, collision_tiles):
         """Met à jour le gestionnaire de joueurs"""

@@ -38,7 +38,7 @@ class QTEManager:
 
 
     def start_round(self):
-        self.current_sequence = [random.choice(self.QTE_keys) for _ in range(random.randint(5, 10))]
+        self.current_sequence = [random.choice(self.QTE_keys) for _ in range(random.randint(1, 2))]
         self.current_index = 0
         self.waiting = False
         self.progress = 0

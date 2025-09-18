@@ -1,5 +1,8 @@
+
 import pygame
 from player import Player
+from prince import Prince
+from horse import Horse
 from QTE_manager import QTEManager
 
 class PlayerManager2:
@@ -11,6 +14,9 @@ class PlayerManager2:
         # Joueur actuel
         self.current_player = Player(initial_x, initial_y)
         self.current_player.update_can_move(False)
+        self.prince = Prince(initial_x, initial_y - 20)
+        self.prince_is_walking = False
+        self.prince_current_animation = "idle"
         
         # Liste des corps morts
         self.dead_bodies = []
@@ -26,12 +32,41 @@ class PlayerManager2:
         self.QTE_manager = QTEManager(initial_x, initial_y, self.on_qte_end)
         self.QTE_manager.start_round()  # Démarrer immédiatement le QTE
 
-        self.horse_x = 450  # Position du cheval
+        self.horse_x = 445  # Position du cheval
+        self.horse = Horse(self.horse_x, initial_y)
         self.horse_trigger_zone_x = self.horse_x - 10  # Position du cheval
         self.horse_game_triggered = False
         self.horse_game_over = False
         self.horse_timer = 120 
         self.horse_score = 0
+
+        # Position actuelle du prince (il bougera vers la droite)
+        self.prince_base_speed = 0.5  # Plus rapide (était 0.5)
+        self.prince_speed_variation = 0
+        self.prince_speed_timer = 0
+        
+        # Animation du prince
+        self.prince_animation_frame = 0
+        self.prince_animation_timer = 0
+        self.prince_animation_speed = 8
+        self.prince_current_animation = "idle"  # Animation actuelle du prince ("idle" ou "run")
+        
+        # Sons de pas du prince
+        self.prince_footstep_timer = 0
+        self.prince_footstep_interval = 30  # 30 frames = 0.5 seconde entre chaque pas (lent)
+        self.prince_is_walking = False
+        self.sprites = {"campfire": []}
+        self.init_campfire_frames()
+        self.campfire_animation_frame = 0
+        self.frame_count = 0
+        self.frame_between_animation = 4
+
+        try:
+            self.footstep_sound = pygame.mixer.Sound("assets/sounds/footstep.wav")
+            self.footstep_sound.set_volume(0.5)  # Volume modéré pour les pas
+        except pygame.error as e:
+            print(f"Erreur lors du chargement des sons: {e}")
+            self.footstep_sound = None
         
         self.key_e_img = pygame.image.load("assets/images/sprites/key/e1.png").convert_alpha()
         
@@ -39,9 +74,23 @@ class PlayerManager2:
         """Met à jour le gestionnaire de joueurs"""
         self.QTE_manager.update(keys)
 
-        if not self.horse_game_triggered and self.current_player.rect.x >= self.horse_trigger_zone_x:
+        if self.QTE_is_over and not self.horse_game_triggered and self.prince.x < self.horse_trigger_zone_x:
+            current_speed = max(0.1, self.prince_base_speed + 0.2)  # Vitesse fixe pendant le panning
+            self.prince.x += current_speed
+            self.current_player.rect.x  = self.prince.x + (self.prince.rect.width // 2) - (self.current_player.rect.width // 2)   # Déplacer le joueur avec le prince
+            
+            
+            # Jouer les pas lents du prince
+            self.prince_footstep_timer += 1
+            if self.prince_footstep_timer >= self.prince_footstep_interval:
+                self.prince_footstep_timer = 0
+                if self.footstep_sound:
+                    self.footstep_sound.play()
+
+        if not self.horse_game_triggered and self.prince.x >= self.horse_trigger_zone_x:
             self.horse_game_triggered = True
-            self.current_player.update_can_move(False)
+            self.prince_current_animation = "idle"
+            self.prince_is_walking = False
 
         if self.horse_game_triggered and not self.horse_game_over:
             self.horse_timer -= 1
@@ -51,46 +100,45 @@ class PlayerManager2:
         if not self.horse_game_over and self.horse_timer<=0:
             self.horse_game_over = True
             self.current_player.update_can_move(True)
-            # self.current_player.speed += self.horse_score
-
-        if self.respawning:
-            self.handle_respawn(keys, collision_tiles)
+            self.current_player.speed += self.current_player.speed * (self.horse_score / 100)  # Augmente la vitesse du joueur
+            print(self.current_player.speed)
+            self.prince_is_walking = False
+            self.prince_current_animation = 'idle'
         else:
             # Mettre à jour le joueur actuel
             self.current_player.update(keys, collision_tiles)
             
-            # Vérifier si le joueur est mort et a fini de tomber
-            if self.current_player.is_dead and self.current_player.death_fall_complete:
-                self.start_respawn()
-    
-    def handle_respawn(self, keys, collision_tiles):
-        """Gère le processus de respawn"""
-        self.respawn_timer += 1
-        
-        if self.new_player is None:
-            # Créer le nouveau joueur qui arrive de la droite
-            spawn_x = self.castle_door_x + 200  # Commencer hors écran à droite
-            self.new_player = Player(spawn_x, self.initial_spawn_y)
-            
-        # Le nouveau joueur se déplace automatiquement vers la position du corps
-        target_x = self.dead_bodies[-1].rect.x if self.dead_bodies else self.initial_spawn_x
-        
-        if self.new_player.rect.x > target_x:  # S'arrêter exactement à la position du corps
-            self.new_player.rect.x -= 3  # Vitesse d'approche
-            self.new_player.current_animation = "run"
-            self.new_player.facing_right = False
-        else:
-            # Le nouveau joueur est arrivé exactement à la position du corps mort
-            self.new_player.rect.x = target_x  # Position exacte
-            self.new_player.current_animation = "idle"
-            self.current_player = self.new_player
-            self.new_player = None
-            self.respawning = False
-            self.respawn_timer = 0
-        
-        # Mettre à jour l'animation du nouveau joueur
-        if self.new_player:
-            self.new_player.update_animation()
+            if self.current_player.can_move:
+                horse_moving = False
+                if keys[pygame.K_q] or keys[pygame.K_LEFT]:
+                    self.horse.facing = 'left'
+                    self.prince.facing_right = False
+                    horse_moving = True
+                elif keys[pygame.K_d] or keys[pygame.K_RIGHT]:  
+                    self.horse.facing = 'right'
+                    self.prince.facing_right = True
+                horse_moving = True
+                if horse_moving:
+                    self.horse.set_animation('run')
+                else:
+                    self.horse.set_animation('idle')
+                if keys[pygame.K_z] or keys[pygame.K_UP] or keys[pygame.K_SPACE]:
+                    self.horse.set_animation('jump')
+
+                if self.horse_game_over and self.prince.x < 3300:
+                    self.prince.x = self.current_player.rect.x - 10 - (self.prince.rect.width // 2) + (self.current_player.rect.width // 2)
+                    if not self.prince.facing_right:
+                        self.prince.x += 10
+                    self.prince.y = self.current_player.rect.y - 50
+                    self.horse.rect.x = self.current_player.rect.x  - (self.horse.rect.width // 2) + (self.current_player.rect.width // 2)
+                    self.horse.rect.y = self.current_player.rect.y
+                else:
+                    self.prince.x += self.current_player.speed
+                    self.horse.rect.x += self.current_player.speed
+            else:
+                self.current_player.rect.x = self.prince.x + (self.prince.rect.width // 2) - (self.current_player.rect.width // 2)   # Déplacer le joueur avec le prince
+        self.horse.update()
+        self.prince.update()
     
     def get_current_player(self):
         """Retourne le joueur actuel (celui qu'on contrôle)"""
@@ -103,10 +151,10 @@ class PlayerManager2:
             body.draw(screen, camera_x, camera_y)
         
         # Dessiner le joueur actuel
-        if not self.respawning:
-            player_screen_x = self.current_player.rect.x - camera_x
-            player_screen_y = self.current_player.rect.y - camera_y
-            self.current_player.draw(screen, player_screen_x, player_screen_y)
+        # if not self.respawning:
+        #     player_screen_x = self.current_player.rect.x - camera_x
+        #     player_screen_y = self.current_player.rect.y - camera_y
+            # self.current_player.draw(screen, player_screen_x, player_screen_y)
 
         
         if self.horse_game_triggered and not self.horse_game_over:
@@ -114,12 +162,10 @@ class PlayerManager2:
             pos = (self.horse_x-img.get_width()//2, self.initial_spawn_y - 30)
             screen.blit(img, pos)
         
+        self.horse.draw(screen, camera_x, camera_y)
         self.QTE_manager.draw(screen,camera_x,camera_y)
-        # # Dessiner le nouveau joueur pendant le respawn
-        # if self.respawning and self.new_player:
-        #     new_player_screen_x = self.new_player.rect.x - camera_x
-        #     new_player_screen_y = self.new_player.rect.y - camera_y
-        #     self.new_player.draw(screen, new_player_screen_x, new_player_screen_y)
+        self.prince.draw(screen, camera_x, camera_y)
+        self.draw_campfire(screen, camera_x, camera_y)
     
     def draw_health_bar(self, screen):
         """Dessine la barre de santé"""
@@ -144,4 +190,33 @@ class PlayerManager2:
     def on_qte_end(self):
         """Appelé lorsque le QTE est terminé"""
         self.QTE_is_over = True
-        self.current_player.update_can_move(True)
+        self.prince_is_walking = True
+        self.prince_current_animation = "run"
+        # self.current_player.update_can_move(True)
+
+    def draw_campfire(self, screen, camera_x, camera_y):
+        # Affiche l'animation du feu de camp en boucle
+        self.frame_count += 1
+        if self.frame_count % self.frame_between_animation == 0:
+            self.campfire_animation_frame += 1
+        frames = self.sprites["campfire"]
+        frame = frames[self.campfire_animation_frame % len(frames)]
+        screen_x = self.initial_spawn_x - camera_x - 30
+        screen_y = self.initial_spawn_y - camera_y + 45
+        screen.blit(frame, (screen_x, screen_y))
+
+    def init_campfire_frames(self):
+        """Charge toutes les frames du feu de camp"""
+        import os
+        sprite_path = "assets/images/sprites/campfire/"
+        frames = []
+        files = [f for f in os.listdir(sprite_path) if f.lower().startswith("campfire") and f.lower().endswith('.png')]
+        files.sort()  # Pour l'ordre d'animation
+        for filename in files:
+            img_path = os.path.join(sprite_path, filename)
+            try:
+                image = pygame.image.load(img_path).convert_alpha()
+                frames.append(image)
+            except pygame.error as e:
+                print(f"Erreur lors du chargement de {img_path}: {e}")
+        self.sprites["campfire"] = frames

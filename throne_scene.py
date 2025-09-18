@@ -57,12 +57,12 @@ class ThroneScene:
 				if snap_y is None or rect.top < snap_y:
 					snap_y = rect.top
 		if snap_y is not None:
-			self.player.rect.y = snap_y - self.player.rect.height - 10  # Ajout de -10 pour éviter d'être dans le sol
+			self.player.rect.y = snap_y - self.player.rect.height + 10  # Ajout de -10 pour éviter d'être dans le sol
 		else:
-			self.player.rect.y = ground_guess_y - 10  # Ajout de -10 pour éviter d'être dans le sol
+			self.player.rect.y = ground_guess_y + 10  # Ajout de -10 pour éviter d'être dans le sol
 
 		# Target near the right side (throne area visually)
-		self.target_x = self.map_width * self.tile_px - 58 * self.tile_px
+		self.target_x = self.map_width * self.tile_px - 59 * self.tile_px
 		self.walk_speed = 5 #TODO 3  # will be used as Player.speed during the walk
 
 	# ---------- Map loading ----------
@@ -176,7 +176,7 @@ class ThroneScene:
 				self.cinematic_phase = "zoom_on_throne"
 				self.player.rect.centery -= 80
 		elif self.cinematic_phase == "zoom_on_throne":
-			self.player.rect.centerx = self.map_width * self.tile_px - 53 * self.tile_px
+			self.player.rect.centerx = self.map_width * self.tile_px - 53.2 * self.tile_px
 
 			# Make the prince face left
 			self.player.facing_right = False

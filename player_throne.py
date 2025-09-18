@@ -11,7 +11,7 @@ class PlayerThrone:
         self.footstep_delay = 300
         self.last_footstep = 0 
 
-        self.rect = pygame.Rect(x, y, 75, 75)  # Taille du joueur ajustée pour scale 2.34 (75x75)
+        self.rect = pygame.Rect(x, y, 125, 125)  # Taille du joueur ajustée pour scale 2.34 (75x75)
         self.speed = 5
         self.jump_speed = -15  # Réduit de -15 à -12 pour un saut moins haut
         self.gravity = 0.9
@@ -78,7 +78,7 @@ class PlayerThrone:
                             full_path = os.path.join(folder_path, filename)
                             frame = pygame.image.load(full_path).convert_alpha()
                             # Redimensionner la frame à 75x75 (ajusté pour scale 2.34)
-                            frame = pygame.transform.scale(frame, (75, 75))
+                            frame = pygame.transform.scale(frame, (125, 125))
                             # Appliquer une teinte bleue claire pour distinguer le joueur
                             frames.append(frame)
                 
@@ -93,7 +93,7 @@ class PlayerThrone:
                     full_path = os.path.join(sprite_path, anim_config["file"])
                     frame = pygame.image.load(full_path).convert_alpha()
                     # Redimensionner la frame à 75x75 (ajusté pour scale 2.34)
-                    frame = pygame.transform.scale(frame, (75, 75))
+                    frame = pygame.transform.scale(frame, (125, 125))
                     frames = [frame]
                 
                 self.sprites[anim_name] = frames

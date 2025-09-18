@@ -6,13 +6,13 @@ from horse import Horse
 from QTE_manager import QTEManager
 
 class PlayerManager2:
-    """Gère les joueurs, les morts et les respawns"""
+    """Gère le niveau 2"""
     def __init__(self, initial_x, initial_y):
         self.initial_spawn_x = initial_x
         self.initial_spawn_y = initial_y
         
         # Joueur actuel
-        self.current_player = Player(initial_x, initial_y)
+        self.current_player = Player(initial_x, initial_y, play_sound=False)
         self.current_player.update_can_move(False)
         self.prince = Prince(initial_x, initial_y - 20)
         self.prince_is_walking = False
@@ -58,19 +58,58 @@ class PlayerManager2:
         self.sprites = {"campfire": []}
         self.init_campfire_frames()
         self.campfire_animation_frame = 0
+
+        self.horse_footstep_timer = 0
+        self.horse_footstep_interval = 15
+
         self.frame_count = 0
         self.frame_between_animation = 4
+        self.campfire_sound_playing = False
 
         try:
+            self.campfire_sound = pygame.mixer.Sound("assets/sounds/fire.mp3")
+            self.campfire_sound.set_volume(0.7)
+            
             self.footstep_sound = pygame.mixer.Sound("assets/sounds/footstep.wav")
-            self.footstep_sound.set_volume(0.5)  # Volume modéré pour les pas
+            self.footstep_sound.set_volume(0.5) 
+            self.horse_footstep_sound = pygame.mixer.Sound("assets/sounds/gallop.wav")
+            self.horse_footstep_sound.set_volume(0.5) 
+
+            
+            self.horse_neigh_sound = pygame.mixer.Sound("assets/sounds/horse_neigh.mp3")
+            self.horse_neigh_sound.set_volume(0.5)
+            self.whip_sound = pygame.mixer.Sound("assets/sounds/whip.mp3")
+            self.whip_sound.set_volume(0.7)
         except pygame.error as e:
             print(f"Erreur lors du chargement des sons: {e}")
             self.footstep_sound = None
+            self.campfire_sound = None
+            self.horse_footstep_sound = None
+            self.horse_neigh_sound = None
+            self.whip_sound = None
         
-        self.key_e_img = pygame.image.load("assets/images/sprites/key/e1.png").convert_alpha()
+        
+        # Agrandir la touche E (ex: 1.5x)
+        key_e_raw = pygame.image.load("assets/images/sprites/key/e1.png").convert_alpha()
+        scale_factor = 1.3
+        new_size = (int(key_e_raw.get_width() * scale_factor), int(key_e_raw.get_height() * scale_factor))
+        self.key_e_img = pygame.transform.scale(key_e_raw, new_size)
         
     def update(self, keys, collision_tiles):
+        if not self.campfire_sound_playing:
+            self.campfire_sound_playing=True
+            self.campfire_sound.play(loops=-1)
+        if hasattr(self, 'campfire_sound') and self.campfire_sound:
+            campfire_x = self.initial_spawn_x - 30
+            campfire_y = self.initial_spawn_y - 45
+            player_x = self.current_player.rect.x
+            player_y = self.current_player.rect.y
+            dist = ((player_x - campfire_x) ** 2 + (player_y - campfire_y) ** 2) ** 0.5
+            max_dist = 650
+            volume = max(0.0, 1.0 - dist / max_dist)
+            self.campfire_sound.set_volume(volume * 0.9)
+
+
         """Met à jour le gestionnaire de joueurs"""
         self.QTE_manager.update(keys)
 
@@ -104,12 +143,18 @@ class PlayerManager2:
             print(self.current_player.speed)
             self.prince_is_walking = False
             self.prince_current_animation = 'idle'
+            self.horse_neigh_sound.play()
+            self.whip_sound.play()
         else:
             # Mettre à jour le joueur actuel
             self.current_player.update(keys, collision_tiles)
             
             if self.current_player.can_move:
                 horse_moving = False
+                horse_jumping = False
+                if keys[pygame.K_z] or keys[pygame.K_UP] or keys[pygame.K_SPACE]:
+                    horse_jumping = True
+                    self.horse.set_animation('jump')
                 if keys[pygame.K_q] or keys[pygame.K_LEFT]:
                     self.horse.facing = 'left'
                     self.prince.facing_right = False
@@ -117,22 +162,29 @@ class PlayerManager2:
                 elif keys[pygame.K_d] or keys[pygame.K_RIGHT]:  
                     self.horse.facing = 'right'
                     self.prince.facing_right = True
-                horse_moving = True
-                if horse_moving:
+                    horse_moving = True
+                if horse_moving and not horse_jumping:
+                    # Jouer le gallop
+                    self.horse_footstep_timer += 1
+                    if self.horse_footstep_timer >= self.horse_footstep_interval:
+                        self.horse_footstep_timer = 0
+                        if self.horse_footstep_sound:
+                            self.horse_footstep_sound.play()
                     self.horse.set_animation('run')
                 else:
                     self.horse.set_animation('idle')
-                if keys[pygame.K_z] or keys[pygame.K_UP] or keys[pygame.K_SPACE]:
-                    self.horse.set_animation('jump')
 
                 if self.horse_game_over and self.prince.x < 3300:
                     self.prince.x = self.current_player.rect.x - 10 - (self.prince.rect.width // 2) + (self.current_player.rect.width // 2)
                     if not self.prince.facing_right:
                         self.prince.x += 10
-                    self.prince.y = self.current_player.rect.y - 50
+                    self.prince.y = self.current_player.rect.y - 55
                     self.horse.rect.x = self.current_player.rect.x  - (self.horse.rect.width // 2) + (self.current_player.rect.width // 2)
-                    self.horse.rect.y = self.current_player.rect.y
+                    self.horse.rect.y = self.current_player.rect.y - 5
                 else:
+                    self.horse.facing = 'right'
+                    self.prince.facing_right = True
+                    self.current_player.speed = self.current_player.speed * 0.99
                     self.prince.x += self.current_player.speed
                     self.horse.rect.x += self.current_player.speed
             else:
@@ -150,16 +202,9 @@ class PlayerManager2:
         for body in self.dead_bodies:
             body.draw(screen, camera_x, camera_y)
         
-        # Dessiner le joueur actuel
-        # if not self.respawning:
-        #     player_screen_x = self.current_player.rect.x - camera_x
-        #     player_screen_y = self.current_player.rect.y - camera_y
-            # self.current_player.draw(screen, player_screen_x, player_screen_y)
-
-        
         if self.horse_game_triggered and not self.horse_game_over:
             img = self.key_e_img
-            pos = (self.horse_x-img.get_width()//2, self.initial_spawn_y - 30)
+            pos = (self.horse_x-img.get_width()//2 + 30, self.initial_spawn_y - 30)
             screen.blit(img, pos)
         
         self.horse.draw(screen, camera_x, camera_y)

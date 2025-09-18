@@ -9,8 +9,6 @@ class QTEManager:
         self.base_y = y
         self.QTE_rounds_number = 5
         self.QTE_rounds_done = 0
-        self.QTE_minimum_time = 15
-        self.QTE_maximum_time = 30
         self.QTE_waiting_timer = 60
 
         self.onQteEnd = onQteEnd
@@ -33,12 +31,24 @@ class QTEManager:
 
         self.key_pressed = False
 
-        self.key_q_img = pygame.image.load("assets/images/sprites/key/q1.png").convert_alpha()
-        self.key_d_img = pygame.image.load("assets/images/sprites/key/d1.png").convert_alpha()
+        # Agrandir les touches Q et D (ex: 1.5x)
+        key_q_raw = pygame.image.load("assets/images/sprites/key/q1.png").convert_alpha()
+        key_d_raw = pygame.image.load("assets/images/sprites/key/d1.png").convert_alpha()
+        scale_factor = 1.3
+        new_size = (int(key_q_raw.get_width() * scale_factor), int(key_q_raw.get_height() * scale_factor))
+        self.key_q_img = pygame.transform.scale(key_q_raw, new_size)
+        self.key_d_img = pygame.transform.scale(key_d_raw, new_size)
 
+        try:
+            self.sword_clash_sound = pygame.mixer.Sound("assets/sounds/sword_clash.mp3")
+            self.sword_clash_sound.set_volume(0.4)
+            
+        except pygame.error as e:
+            print(f"Erreur lors du chargement des sons: {e}")
+            self.sword_clash_sound = None
 
     def start_round(self):
-        self.current_sequence = [random.choice(self.QTE_keys) for _ in range(random.randint(1, 2))]
+        self.current_sequence = [random.choice(self.QTE_keys) for _ in range(random.randint(5, 8))]
         self.current_index = 0
         self.waiting = False
         self.progress = 0
@@ -74,7 +84,7 @@ class QTEManager:
                 if self.current_index < len(self.current_sequence):
                     self.last_instruction = self.current_sequence[self.current_index]
                     self.state = 'instruction'
-                    self.reaction_window = 45  
+                    self.reaction_window = 30  
                     self.success = False
 
         if self.state == 'instruction':
@@ -92,6 +102,7 @@ class QTEManager:
                 self.animation_timer = 20
                 if self.success:
                     self.sequence_score += 1
+                    self.sword_clash_sound.play()
                     if self.last_instruction == 'left':
                         self.left_ally.set_animation('attack1')
                         self.left_ennemy.set_animation('attack1')

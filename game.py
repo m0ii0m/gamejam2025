@@ -30,7 +30,7 @@ class Game:
         self.screen_height = screen.get_height()
 
         # États du jeu
-        self.game_state = "throne"
+        self.game_state = "start_menu"
         
         # Initialisation des scènes
         self.throne = ThroneScene(self.screen)
@@ -66,12 +66,12 @@ class Game:
     def start_game_function(self):
         
         from src.scenes.intro import IntroScene
-        self.intro_scene = IntroScene(self)
-        self.game_state = "intro"
+        # self.intro_scene = IntroScene(self)
+        # self.game_state = "intro"
         #self.init_level1()
         #self.game_state = "level1"
-        # self.init_level2()
-        # self.game_state = "level2"
+        self.init_level2()
+        self.game_state = "level2"
 
     def show_credits_function(self):
         self.game_state = "credits"
@@ -229,6 +229,10 @@ class Game:
 
         # Mise à jour du gestionnaire de joueurs
         self.player_manager.update(keys, self.level2.collision_tiles)
+
+        # Gestion du volume de la musique basé sur la position du joueur
+        if self.player_manager.get_current_player():
+            self.update_music_volume(self.player_manager.get_current_player().rect.x)
 
         # Mise à jour de la caméra pour suivre le joueur (ou le prince pendant la protection)
         self.update_camera()
@@ -615,6 +619,15 @@ class Game:
         # Gestionnaire de joueurs et système de respawn
         self.player_manager = PlayerManager2(start_x, start_y)
 
+        self.setup_level2_music()
+
+        self.music_volume_base = 0  # Volume de base
+
+        # Début de la baisse de volume (retour à 70)
+        self.music_fade_start_tile = -30
+        # Fin de la baisse de volume (volume minimal)
+        self.music_fade_end_tile = -10
+
     def update_music_volume(self, player_x):
         """Met à jour le volume de la musique basé sur la position du joueur"""
         # Convertir la position du joueur en tile
@@ -642,7 +655,7 @@ class Game:
             )  # De 0.0 à music_volume_base
 
         # Appliquer le volume sur le canal de musique ET sur pygame.mixer.music
-        if hasattr(self.level1, "music_channel") and hasattr(self.level1, "music_sound"):
+        if (hasattr(self.level1, "music_channel") and hasattr(self.level1, "music_sound")) or (hasattr(self.level2, "music_channel") and hasattr(self.level2, "music_sound")):
             self.current_music_channel.set_volume(volume)
         pygame.mixer.music.set_volume(volume)
         
@@ -678,7 +691,7 @@ class Game:
 
     def setup_level2_music(self):
         """Configure et lance la musique du niveau 2."""
-        self.setup_music("", volume=0.5)
+        self.setup_music("./assets/sounds/night_atmosphere.mp3", volume=0.5)
 
     def setup_throne_music(self):
         """Configure et lance la musique de la scène du trône."""

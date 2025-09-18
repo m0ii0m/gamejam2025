@@ -4,12 +4,13 @@ import random
 
 
 class Player:
-    def __init__(self, x, y):
+    def __init__(self, x, y, play_sound=True):
         pygame.mixer.music.load("./assets/sounds/jump.wav")
         
         pygame.mixer.music.set_volume(0.5)  
         self.footstep_delay = 300
         self.last_footstep = 0 
+        self.play_sound = play_sound
 
         self.rect = pygame.Rect(x, y, 75, 75)  # Taille du joueur ajustée pour scale 2.34 (75x75)
         self.speed = 5
@@ -218,7 +219,8 @@ class Player:
             if self.on_ground:
                 self.current_animation = "run"
                 if now - self.last_footstep > self.footstep_delay:
-                    footstep.play()
+                    if self.play_sound:
+                        footstep.play()
                     self.last_footstep = now
         elif (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and self.can_move:
             dx = self.speed
@@ -226,7 +228,8 @@ class Player:
             if self.on_ground:
                 self.current_animation = "run"
                 if now - self.last_footstep > self.footstep_delay:
-                    footstep.play()
+                    if self.play_sound:
+                        footstep.play()
                     self.last_footstep = now
         else:
             if self.on_ground:
@@ -234,7 +237,8 @@ class Player:
         
         # Saut
         if (keys[pygame.K_SPACE] or keys[pygame.K_UP] or keys[pygame.K_z]) and self.on_ground and self.can_move:
-            jump.play()
+            if self.play_sound: 
+                jump.play()
             self.velocity_y = self.jump_speed
             self.on_ground = False
             self.current_animation = "jump"

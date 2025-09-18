@@ -10,7 +10,6 @@ class ProtectorSoldier:
     # Sons partagés pour tous les protecteurs
     _sounds_loaded = False
     _man_dying_sound = None
-    _death_fortnite_sound = None
     
     @classmethod
     def load_sounds(cls):
@@ -19,15 +18,12 @@ class ProtectorSoldier:
             try:
                 pygame.mixer.init()
                 cls._man_dying_sound = pygame.mixer.Sound("assets/sounds/manDying.wav")
-                cls._death_fortnite_sound = pygame.mixer.Sound("assets/sounds/deathFortnite.mp3")
                 # Ajuster le volume si nécessaire
                 cls._man_dying_sound.set_volume(0.7)
-                cls._death_fortnite_sound.set_volume(0.6)
                 cls._sounds_loaded = True
             except pygame.error as e:
                 print(f"Erreur lors du chargement des sons protecteur: {e}")
                 cls._man_dying_sound = None
-                cls._death_fortnite_sound = None
                 cls._sounds_loaded = True
     
     def __init__(self, x, y):

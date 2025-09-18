@@ -137,7 +137,7 @@ class Game:
         self.throne.update()
         # Passage automatique au niveau 1 quand la cinématique est terminée
         if getattr(self.throne, "cinematic_phase", None) == "done":
-            
+            self.throne = ThroneScene(self.screen)
             pygame.mixer.music.stop()
             self.start_intro_for_phase("transition_throne_to_menu")
             # self.game_state = "start_menu"

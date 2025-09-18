@@ -105,6 +105,7 @@ class PlayerManager2:
         
     def update(self, keys, collision_tiles):
         if not self.campfire_sound_playing:
+            self.current_player.speed = 5
             self.campfire_sound_playing=True
             self.campfire_sound.play(loops=-1)
         if hasattr(self, 'campfire_sound') and self.campfire_sound:

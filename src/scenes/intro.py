@@ -1,8 +1,9 @@
 import pygame as pg
-from core import Scene, WIDTH, HEIGHT, WHITE, BLACK, draw_multiline_left
+from ..core import Scene, WIDTH, HEIGHT, WHITE, BLACK, draw_multiline_left
 
 class IntroScene(Scene):
     def __init__(self, game):
+        
 
         self.font_bahiana = pg.font.Font("assets/fonts/Bahiana/Bahiana-Regular.ttf", 34)
 
@@ -21,6 +22,7 @@ class IntroScene(Scene):
             "Appuyez sur ENTER pour commencer (Niveau 1)",
         ]
 
+        self.finished = False
         self.displayed_text = [""] * len(self.lines)
         self.current_line = 0
         self.current_char = 0
@@ -31,10 +33,10 @@ class IntroScene(Scene):
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_RETURN:
                 self.typing_sound2.stop()
-                from scenes.runner import RunnerScene
-                self.game.change_scene(RunnerScene(self.game))
+                self.finished = True
             elif event.key == pg.K_ESCAPE:
                 pg.event.post(pg.event.Event(pg.QUIT))
+
 
     def draw(self, surf):
         if self.current_line == 0 and self.current_char == 0:
@@ -58,8 +60,17 @@ class IntroScene(Scene):
                     self.current_char = 0
                 self.last_update = now
 
+
+
+
+
+
+
         draw_multiline_left(surf,self.lines,self.displayed_text, WHITE,(WIDTH//2, HEIGHT//2),line_gap=10,font=self.font_bahiana)
 
+
+    def is_finished(self):
+        return self.finished
 
 
 

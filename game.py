@@ -11,6 +11,7 @@ from battlefield_manager import BattlefieldManager
 from throne_scene import ThroneScene
 from levels_utils import draw, get_collision_tiles, draw_foreground_tilemap, draw_background_tilemap
 from start_menu import StartMenu
+from src.scenes.intro import IntroScene
 from prince_protection_manager import PrinceProtectionManager
 
 class Game:
@@ -48,8 +49,10 @@ class Game:
         )
 
     def start_game_function(self):
-        self.init_level2()
-        self.game_state = "level2"
+        
+        from src.scenes.intro import IntroScene
+        self.intro_scene = IntroScene(self)
+        self.game_state = "intro"
         # self.init_level1()
         # self.game_state = "level1"
 
@@ -71,6 +74,15 @@ class Game:
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 pygame.quit()
                 sys.exit()
+
+        if self.game_state == "intro":
+            for event in events:
+                self.intro_scene.handle_event(event)
+            self.intro_scene.draw(self.screen)
+            
+            if self.intro_scene.is_finished():  
+                self.init_level1()
+                self.game_state = "level1"
 
         if self.game_state == "start_menu":
             self.start_menu.update()

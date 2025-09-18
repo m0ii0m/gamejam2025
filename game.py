@@ -137,7 +137,10 @@ class Game:
         self.throne.update()
         # Passage automatique au niveau 1 quand la cinématique est terminée
         if getattr(self.throne, "cinematic_phase", None) == "done":
-            self.game_state = "start_menu"
+            
+            pygame.mixer.music.stop()
+            self.start_intro_for_phase("transition_throne_to_menu")
+            # self.game_state = "start_menu"
 
     def draw_throne(self):
         # La scène gère son propre rendu
@@ -247,6 +250,7 @@ class Game:
                 "Deux fidèles serviteurs réussissent à le rejoindre, ",
                 "formant une petite troupe décidée à continuer la lutte."
                 "",
+                "",
                 "Appuyez sur ENTER pour commencer (Niveau 2)"
             ]
             next_state = "level2"
@@ -257,9 +261,20 @@ class Game:
                 "Cette fois, ce sont le sacrifice de ses compagnons et la bravoure ",
                 "de son cheval qui lui offrent la vie sauve."
                 "",
+                "",
                 "Appuyez sur ENTER pour continuer"
             ]
-            next_state = "credits"
+            next_state ="throne"
+        elif phase == "transition_throne_to_menu":
+            lines = [
+                "Bravo ! Vous avez aidé le prince à sauver le royaume… ",
+                "Mais une question demeure : ",
+                "que se serait-il passé si vos choix avaient été différents ?",
+                "",
+                "",
+                "Appuyez sur ENTER pour continuer"
+            ]
+            next_state = "start_menu"
 
         else:
             lines = ["Texte par défaut..."]

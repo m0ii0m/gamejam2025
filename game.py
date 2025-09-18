@@ -415,6 +415,8 @@ class Game:
         temp_player = Player(0, 0)
         start_y = ground_tile_y * self.level1.tile_size * self.level1.scale_factor + self.level1.map_offset_y - temp_player.rect.height
 
+        self.prince_protection = PrinceProtectionManager(start_x, start_y, 0)
+        self.prince_protection.state = "waiting" 
         # Gestionnaire de joueurs et système de respawn
         self.player_manager = PlayerManager2(start_x, start_y)
         

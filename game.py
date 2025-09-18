@@ -65,7 +65,17 @@ class Game:
 
     def start_game_function(self):
         from src.scenes.intro import IntroScene
-        self.intro_scene = IntroScene(self)
+        self.intro_scene = IntroScene(self,
+                                      lines=[
+            "Notre pays est en guerre, et le roi vient de mourir.",
+            "Le prince, dernier espoir du royaume, doit être prévenu.",
+            "Un messager courageux part alors accomplir sa mission :",
+            "",
+            "Avertir le prince, actuellement assiégé dans son château.",
+            "",
+            "",
+            "Appuyez sur ENTER pour commencer (Niveau 1)",
+        ], next_state="level1")
         self.game_state = "intro"
 
     def show_credits_function(self):
@@ -220,17 +230,22 @@ class Game:
             lines = [
                 "Notre pays est en guerre, et le roi vient de mourir.",
                 "Le prince, dernier espoir du royaume, doit être prévenu.",
-                "Un messager courageux part alors accomplir sa mission : avertir le prince, actuellement assiégé dans son château.",
+                "Un messager courageux part alors accomplir sa mission :",
                 "",
-                "Appuyez sur ENTER pour commencer (Niveau 1)"
+                "Avertir le prince, actuellement assiégé dans son château.",
+                "",
+                "",
+                "Appuyez sur ENTER pour commencer (Niveau 1)",
             ]
             next_state = "level1"
 
         elif phase == "transition_lvl1_to_lvl2":
             lines = [
                 "Contre toute attente, le prince parvient à s’échapper d’une situation désespérée.",
-                "Grâce à votre aide, il survit. Mais le répit est de courte durée : il se retrouve perdu, en pleine nuit, au cœur d’une forêt ennemie.",
-                "Deux fidèles serviteurs réussissent à le rejoindre, formant une petite troupe décidée à continuer la lutte.",
+                "Grâce à votre aide, il survit. Mais le répit est de courte durée : ",
+                "il se retrouve perdu, en pleine nuit, au cœur d’une forêt ennemie.",
+                "Deux fidèles serviteurs réussissent à le rejoindre, ",
+                "formant une petite troupe décidée à continuer la lutte."
                 "",
                 "Appuyez sur ENTER pour commencer (Niveau 2)"
             ]
@@ -239,7 +254,8 @@ class Game:
         elif phase == "transition_lvl2_to_conclusion":
             lines = [
                 "Une fois encore, le prince échappe à ses ennemis.",
-                "Cette fois, ce sont le sacrifice de ses compagnons et la bravoure de son cheval qui lui offrent la vie sauve.",
+                "Cette fois, ce sont le sacrifice de ses compagnons et la bravoure ",
+                "de son cheval qui lui offrent la vie sauve."
                 "",
                 "Appuyez sur ENTER pour continuer"
             ]
@@ -612,7 +628,7 @@ class Game:
 
         # Gestionnaire du mini-niveau de protection du prince
         self.prince_protection = PrinceProtectionManager(
-            prince_x, prince_y, castle_door_x
+            prince_x, prince_y, castle_door_x, self.start_intro_for_phase
         )
 
         # Charger et lancer la musique du niveau 1
@@ -645,10 +661,10 @@ class Game:
             - temp_player.rect.height
         )
 
-        self.prince_protection = PrinceProtectionManager(start_x, start_y, 0)
+        self.prince_protection = PrinceProtectionManager(start_x, start_y, 0, None)
         self.prince_protection.state = "waiting"
         # Gestionnaire de joueurs et système de respawn
-        self.player_manager = PlayerManager2(start_x, start_y)
+        self.player_manager = PlayerManager2(start_x, start_y, self.start_intro_for_phase)
 
         self.setup_level2_music()
 

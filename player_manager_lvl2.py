@@ -6,10 +6,11 @@ from horse import Horse
 from QTE_manager import QTEManager
 
 class PlayerManager2:
-    """Gère le niveau 2"""
-    def __init__(self, initial_x, initial_y):
+    """Gère les joueurs, les morts et les respawns"""
+    def __init__(self, initial_x, initial_y, end_level_callback):
         self.initial_spawn_x = initial_x
         self.initial_spawn_y = initial_y
+        self.end_level_callback = end_level_callback
         
         # Joueur actuel
         self.current_player = Player(initial_x, initial_y, play_sound=False)
@@ -198,6 +199,7 @@ class PlayerManager2:
                     self.horse.facing = 'right'
                     self.prince.facing_right = True
                     self.current_player.speed = self.current_player.speed * 0.99
+                    self.end_level_callback("transition_lvl2_to_conclusion")
                     self.prince.x += self.current_player.speed
                     self.horse.rect.x += self.current_player.speed
             else:

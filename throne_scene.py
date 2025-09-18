@@ -44,9 +44,9 @@ class ThroneScene:
 		self._load_map("assets/maps/throne/throne.tmx")
 
 		# Create player using existing Player class
-		from player import Player
+		from player_throne import PlayerThrone
 		# Start off-screen left; place roughly on ground line
-		self.player = Player(-60, 0)
+		self.player = PlayerThrone(-60, 0)
 		ground_guess_y = (self.map_height - 3) * self.tile_px + self.map_offset_y - self.player.rect.height
 		# If we can find a ground tile under x=0 area, snap to it
 		snap_y = None

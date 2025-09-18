@@ -30,7 +30,7 @@ class Game:
         self.screen_height = screen.get_height()
 
         # États du jeu
-        self.game_state = "start_menu"
+        self.game_state = "throne"
         
         # Initialisation des scènes
         self.throne = ThroneScene(self.screen)
@@ -68,9 +68,10 @@ class Game:
         from src.scenes.intro import IntroScene
         self.intro_scene = IntroScene(self)
         self.game_state = "intro"
-        # self.init_level1()
-        # self.game_state = "level1"
-
+        #self.init_level1()
+        #self.game_state = "level1"
+        # self.init_level2()
+        # self.game_state = "level2"
 
     def show_credits_function(self):
         self.game_state = "credits"
@@ -115,6 +116,11 @@ class Game:
 
     def update_throne(self, events):
         """Met à jour la cinématique du trône; Enter/Espace pour skip"""
+        # Lancer la musique de la scène du trône si ce n'est pas déjà fait
+        if not hasattr(self, 'throne_music_started') or not self.throne_music_started:
+            self.setup_throne_music()
+            self.throne_music_started = True
+
         # possibilité de skip (Enter/Espace)
         for event in events:
             if event.type == pygame.KEYDOWN and event.key in (

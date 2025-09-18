@@ -89,9 +89,16 @@ class Game:
                 self.intro_scene.handle_event(event)
             self.intro_scene.draw(self.screen)
             
-            if self.intro_scene.is_finished():  
-                self.init_level1()
-                self.game_state = "level1"
+            if self.intro_scene.is_finished():
+                # passer à l'état suivant
+                next_state = self.intro_scene.next_state
+                if next_state == "level1":
+                    self.init_level1()
+                elif next_state == "level2":
+                    self.init_level2()
+                self.game_state = next_state
+
+
 
         if self.game_state == "start_menu":
             self.start_menu.update()
@@ -207,6 +214,44 @@ class Game:
 
         # Mise à jour de la caméra pour suivre le joueur (ou le prince pendant la protection)
         self.update_camera()
+
+    def start_intro_for_phase(self, phase):
+        if phase == "intro_game":
+            lines = [
+                "Notre pays est en guerre, et le roi vient de mourir.",
+                "Le prince, dernier espoir du royaume, doit être prévenu.",
+                "Un messager courageux part alors accomplir sa mission : avertir le prince, actuellement assiégé dans son château.",
+                "",
+                "Appuyez sur ENTER pour commencer (Niveau 1)"
+            ]
+            next_state = "level1"
+
+        elif phase == "transition_lvl1_to_lvl2":
+            lines = [
+                "Contre toute attente, le prince parvient à s’échapper d’une situation désespérée.",
+                "Grâce à votre aide, il survit. Mais le répit est de courte durée : il se retrouve perdu, en pleine nuit, au cœur d’une forêt ennemie.",
+                "Deux fidèles serviteurs réussissent à le rejoindre, formant une petite troupe décidée à continuer la lutte.",
+                "",
+                "Appuyez sur ENTER pour commencer (Niveau 2)"
+            ]
+            next_state = "level2"
+
+        elif phase == "transition_lvl2_to_conclusion":
+            lines = [
+                "Une fois encore, le prince échappe à ses ennemis.",
+                "Cette fois, ce sont le sacrifice de ses compagnons et la bravoure de son cheval qui lui offrent la vie sauve.",
+                "",
+                "Appuyez sur ENTER pour continuer"
+            ]
+            next_state = "credits"
+
+        else:
+            lines = ["Texte par défaut..."]
+            next_state = "level1"
+
+        self.intro_scene = IntroScene(self, lines=lines, next_state=next_state)
+        self.game_state = "intro"
+
 
     def update_level2(self):
         """Met à jour le niveau 2"""

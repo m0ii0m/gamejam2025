@@ -2,7 +2,7 @@ import pygame as pg
 from ..core import Scene, WIDTH, HEIGHT, WHITE, BLACK, draw_multiline_left
 
 class IntroScene(Scene):
-    def __init__(self, game):
+    def __init__(self, game, lines=None, next_state="level1"):
         
 
         self.font_bahiana = pg.font.Font("assets/fonts/Bahiana/Bahiana-Regular.ttf", 34)
@@ -27,11 +27,13 @@ class IntroScene(Scene):
 
         #   
 
+        self.lines = lines
+        self.next_state = next_state
         self.finished = False
         self.displayed_text = [""] * len(self.lines)
         self.current_line = 0
         self.current_char = 0
-        self.char_delay = 50  # ms entre chaque lettre
+        self.char_delay = 50
         self.last_update = pg.time.get_ticks()
 
     def handle_event(self, event):
@@ -76,6 +78,5 @@ class IntroScene(Scene):
 
     def is_finished(self):
         return self.finished
-
 
 

@@ -23,7 +23,7 @@ class Game:
         self.screen_height = screen.get_height()
         
         # États du jeu
-        self.game_state = "start_menu"  # Pour l'instant, on commence directement au niveau 1
+        self.game_state = "start_menu"
         
         # Initialisation des scènes
         self.throne = ThroneScene(self.screen)
@@ -444,31 +444,43 @@ class Game:
         
         # Appliquer le volume sur le canal de musique ET sur pygame.mixer.music
         if hasattr(self.level1, 'music_channel') and hasattr(self.level1, 'music_sound'):
-            self.level1.music_channel.set_volume(volume)
+            self.current_music_channel.set_volume(volume)
         pygame.mixer.music.set_volume(volume)
         
-    def setup_level1_music(self):
-        """Configure et lance la musique du niveau 1"""
+    def setup_music(self, music_path, volume=0.5):
+        """Configure et lance la musique de fond pour une scène donnée."""
         try:
             # Créer un canal dédié pour la musique
             music_channel = pygame.mixer.Channel(0)
-            level1_sound = pygame.mixer.Sound("./assets/sounds/music/Level1.mp3")
-            
-            # Stocker dans level1 pour pouvoir contrôler le volume
-            self.level1.music_channel = music_channel
-            self.level1.music_sound = level1_sound
-            
+            music_sound = pygame.mixer.Sound(music_path)
+
+            # Stocker le canal et le son pour contrôle
+            self.current_music_channel = music_channel
+            self.current_music_sound = music_sound
+
             # Lancer la musique en boucle
-            music_channel.play(level1_sound, loops=-1)
-            
+            music_channel.play(music_sound, loops=-1)
+
             # Aussi charger avec pygame.mixer.music pour compatibilité
-            pygame.mixer.music.load("./assets/sounds/music/Level1.mp3")
-            pygame.mixer.music.set_volume(0.5)
+            pygame.mixer.music.load(music_path)
+            pygame.mixer.music.set_volume(volume)
             pygame.mixer.music.play(loops=-1)
-            
-            print("Musique du niveau 1 lancée avec succès")
+
+            print(f"Musique {music_path} lancée avec succès")
         except pygame.error as e:
-            print(f"Erreur lors du chargement de la musique du niveau 1: {e}")
+            print(f"Erreur lors du chargement de la musique {music_path}: {e}")
             # Initialiser des valeurs par défaut en cas d'erreur
-            self.level1.music_channel = None
-            self.level1.music_sound = None
+            self.current_music_channel = None
+            self.current_music_sound = None
+
+    def setup_level1_music(self):
+        """Configure et lance la musique du niveau 1."""
+        self.setup_music("./assets/sounds/music/Level1.mp3", volume=0.5)
+
+    def setup_level2_music(self):
+        """Configure et lance la musique du niveau 2."""
+        self.setup_music("", volume=0.5)
+
+    def setup_throne_music(self):
+        """Configure et lance la musique de la scène du trône."""
+        self.setup_music("./assets/sounds/music/crowd-cheering.mp3", volume=0.5)

@@ -71,9 +71,6 @@ class ProtectorSoldier:
                 # Jouer manDying immédiatement
                 if ProtectorSoldier._man_dying_sound:
                     ProtectorSoldier._man_dying_sound.play()
-                # Jouer aussi le son fortnite
-                if ProtectorSoldier._death_fortnite_sound:
-                    ProtectorSoldier._death_fortnite_sound.play()
                 self.death_sounds_played = True
             
             # Continuer l'animation de mort

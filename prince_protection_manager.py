@@ -105,7 +105,7 @@ class ProtectorSoldier:
 
 class PrinceProtectionManager:
     """Gestionnaire du mini-niveau de protection du prince"""
-    def __init__(self, prince_x, prince_y, castle_door_x):
+    def __init__(self, prince_x, prince_y, castle_door_x, finish_level_callback):
         # Charger les sons
         try:
             pygame.mixer.init()
@@ -130,6 +130,8 @@ class PrinceProtectionManager:
             self.paper_sound = None
             self.footstep_sound = None
         
+        self.finish_level_callback = finish_level_callback
+
         # Variables pour la gestion audio séquencée
         self.footsteps_only_mode = False  # Pour couper la musique pendant le zoom
         self.battle_sound_playing = False  # Contrôle du son de bataille
@@ -289,7 +291,7 @@ class PrinceProtectionManager:
             (60, self.turn_enemies, "Tourner ennemis vers prince"),
             (60, self.play_haki, "Jouer son haki"),
             (60, self.kill_all_enemies, "Mort simultanée des ennemis"),
-            (180, self.complete_sequence, "Terminer séquence")
+            (180, self.complete_sequence, "Terminer séquence"),
         ]
         self.create_sequence(actions)
         
@@ -370,6 +372,7 @@ class PrinceProtectionManager:
         
     def complete_sequence(self):
         print("Séquence finale terminée ! Victoire du prince !")
+        self.finish_level_callback("transition_lvl1_to_lvl2")
         return True
         
     def load_prince_sprites(self):

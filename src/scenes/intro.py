@@ -14,16 +14,16 @@ class IntroScene(Scene):
         self.typing_sound2.set_volume(0.5) 
 
 
-        self.lines = [
-            "Notre pays est en guerre, et le roi vient de mourir.",
-            "Le prince, dernier espoir du royaume, doit être prévenu.",
-            "Un messager courageux part alors accomplir sa mission :",
-            "",
-            "Avertir le prince, actuellement assiégé dans son château.",
-            "",
-            "",
-            "Appuyez sur ENTER pour commencer (Niveau 1)",
-        ]
+        # self.lines = [
+        #     "Notre pays est en guerre, et le roi vient de mourir.",
+        #     "Le prince, dernier espoir du royaume, doit être prévenu.",
+        #     "Un messager courageux part alors accomplir sa mission :",
+        #     "",
+        #     "Avertir le prince, actuellement assiégé dans son château.",
+        #     "",
+        #     "",
+        #     "Appuyez sur ENTER pour commencer (Niveau 1)",
+        # ]
 
         #   
 
@@ -33,7 +33,7 @@ class IntroScene(Scene):
         self.displayed_text = [""] * len(self.lines)
         self.current_line = 0
         self.current_char = 0
-        self.char_delay = 50
+        self.char_delay = 1
         self.last_update = pg.time.get_ticks()
 
     def handle_event(self, event):

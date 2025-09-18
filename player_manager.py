@@ -75,7 +75,7 @@ class PlayerManager:
             # Créer le nouveau joueur qui arrive de la droite
             spawn_x = self.castle_door_x + 400  # Commencer hors écran à droite
             # Utiliser la même position Y que le spawn initial pour éviter d'être dans le sol
-            self.new_player = Player(spawn_x, self.initial_spawn_y)
+            self.new_player = Player(spawn_x, self.initial_spawn_y - 100)
             
         # Le nouveau joueur se déplace automatiquement vers la position du corps
         target_x = self.dead_bodies[-1].rect.x if self.dead_bodies else self.initial_spawn_x
@@ -150,22 +150,6 @@ class PlayerManager:
             self.new_player.draw(screen, new_player_screen_x, new_player_screen_y)
     
     def draw_health_bar(self, screen):
-        """Dessine la barre de santé"""
-        # Seulement afficher la barre de santé s'il y a un joueur actif
-        if not self.respawning and self.current_player is not None:
-            # Position de la barre de santé
-            health_x = 20
-            health_y = 20
-            heart_size = 30
-            
-            for i in range(self.current_player.max_health):
-                heart_x = health_x + i * (heart_size + 5)
-                
-                # Dessiner le cœur
-                if i < self.current_player.health:
-                    # Cœur plein (rouge)
-                    pygame.draw.circle(screen, (255, 0, 0), (heart_x + heart_size//2, health_y + heart_size//2), heart_size//2)
-                else:
-                    # Cœur vide (gris)
-                    pygame.draw.circle(screen, (100, 100, 100), (heart_x + heart_size//2, health_y + heart_size//2), heart_size//2)
-                    pygame.draw.circle(screen, (50, 50, 50), (heart_x + heart_size//2, health_y + heart_size//2), heart_size//2, 2)
+        """Dessine la barre de santé - DÉSACTIVÉE"""
+        # L'affichage des vies du joueur a été supprimé selon la demande
+        pass

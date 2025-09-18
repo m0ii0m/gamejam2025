@@ -17,7 +17,7 @@ class ProtectorSoldier:
         if not cls._sounds_loaded:
             try:
                 pygame.mixer.init()
-                cls._man_dying_sound = pygame.mixer.Sound("assets/sounds/manDying.wav")
+                cls._man_dying_sound = pygame.mixer.Sound("assets/sons/manDying.wav")
                 # Ajuster le volume si nécessaire
                 cls._man_dying_sound.set_volume(0.7)
                 cls._sounds_loaded = True
@@ -222,8 +222,8 @@ class PrinceProtectionManager:
         # Flèches qui visent le prince
         self.protection_arrows = []
         self.arrow_spawn_timer = 0
-        self.arrow_spawn_interval = random.randint(10, 30)  # Intervalle encore plus réduit : 0.17 à 0.5 secondes pour commencer plus intense
-        self.initial_arrow_burst = 3  # Nombre de flèches à spawner immédiatement
+        self.arrow_spawn_interval = random.randint(2, 8)  # Intervalle très réduit : 0.07 à 0.27 secondes pour commencer très intense
+        self.initial_arrow_burst = 8  # Nombre de flèches à spawner immédiatement (doublé)
         self.initial_burst_spawned = False  # Flag pour savoir si le burst initial a été fait
         
         # Soldats protecteurs
@@ -775,7 +775,7 @@ class PrinceProtectionManager:
         self.arrow_spawn_timer += 1
         if self.arrow_spawn_timer >= self.arrow_spawn_interval:
             self.arrow_spawn_timer = 0
-            self.arrow_spawn_interval = random.randint(15, 60)  # Intervalle plus intense : 0.25-1s (était 0.5-2s)
+            self.arrow_spawn_interval = random.randint(8, 25)  # Intervalle très intense : 0.13-0.42s (encore plus rapide)
             self.spawn_protection_arrow()
             
         # Mettre à jour les flèches
@@ -859,7 +859,7 @@ class PrinceProtectionManager:
         target_y = self.prince_y + random.randint(-30, 30)
         
         arrow = Arrow(arrow_x, arrow_y, target_x, target_y, "normal")
-        arrow.speed = 8  # Vitesse augmentée (était 5, maintenant 8)
+        arrow.speed = 12  # Vitesse très rapide (était 8, maintenant 12)
         arrow.max_range = 3000  # Portée étendue pour atteindre le prince
         self.protection_arrows.append(arrow)
         print(f"Flèche tirée depuis tile 62 (x={arrow_x}, y={arrow_y}) vers prince (x={target_x}, y={target_y}) - Vitesse: {arrow.speed}")

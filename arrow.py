@@ -42,8 +42,8 @@ class Arrow:
         dy = target_y - start_y
         distance = math.sqrt(dx*dx + dy*dy)
         
-        # Vitesse augmentée pour couvrir de grandes distances
-        speed = 15  # Augmenté pour une meilleure portée
+        # Vitesse fortement augmentée pour des flèches plus rapides
+        speed = 25  # Augmenté de 15 à 25 pour des flèches beaucoup plus rapides
         
         # Vitesses normalisées
         self.velocity_x = (dx / distance) * speed if distance > 0 else 0
@@ -172,13 +172,16 @@ class ArrowManager:
         
         # Gestion des types d'attaque
         self.attack_type_timer = 0
-        self.next_attack_type = "normal"  # "normal" ou "curtain"
+        self.next_attack_type = "curtain"  # Commencer par un rideau de flèches
         self.curtain_delay = random.randint(300, 600)  # 5-10 secondes entre les rideaux
         
         # Gestion du rideau de flèches séquentiel
         self.curtain_active = False
         self.curtain_arrows_to_spawn = []  # Liste des flèches à spawner avec leur timing
         self.curtain_timer = 0
+        
+        # Flag pour le rideau initial
+        self.initial_curtain_spawned = False
         
         # Position fixe : tile (62, 20) convertie en pixels
         # Propriétés de la tilemap (depuis level1.py)
@@ -223,6 +226,12 @@ class ArrowManager:
         
     def update(self, player_x, player_y, collision_tiles=None):
         """Met à jour le gestionnaire de flèches"""
+        # Spawner le rideau initial de flèches au début du jeu
+        if not self.initial_curtain_spawned and self.should_spawn_arrows(player_x):
+            print("Démarrage du jeu avec un rideau de flèches initial !")
+            self.prepare_arrow_curtain(player_x, player_y)
+            self.initial_curtain_spawned = True
+        
         # Incrémenter le timer pour le cooldown des flèches
         self.last_arrow_time += 1
         

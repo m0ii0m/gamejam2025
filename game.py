@@ -459,24 +459,30 @@ class Game:
         # Dimensions de la région à extraire (plus petite que l'écran selon le zoom)
         crop_width = int(self.screen_width / zoom_factor)
         crop_height = int(self.screen_height / zoom_factor)
-
-        # Position de début de la région centrée sur le prince
-        crop_x = max(
-            0,
-            min(self.screen_width - crop_width, int(prince_screen_x - crop_width // 2)),
-        )
-        crop_y = max(
-            0,
-            min(
-                self.screen_height - crop_height,
-                int(prince_screen_y - crop_height // 2),
-            ),
-        )
-
-        # Extraire la région à zoomer
-        crop_rect = pygame.Rect(crop_x, crop_y, crop_width, crop_height)
-        cropped_surface = temp_surface.subsurface(crop_rect).copy()
-
+        
+        # Position de début de la région centrée sur le prince avec sécurités
+        crop_x = max(0, min(self.screen_width - crop_width, int(prince_screen_x - crop_width // 2)))
+        crop_y = max(0, min(self.screen_height - crop_height, int(prince_screen_y - crop_height // 2)))
+        
+        # Sécurité : s'assurer que la région de crop est valide et contient le prince
+        if (crop_width <= 0 or crop_height <= 0 or 
+            crop_x + crop_width > self.screen_width or 
+            crop_y + crop_height > self.screen_height):
+            # Fallback: utiliser la surface complète si le crop échoue
+            print(f"Crop invalide (x={crop_x}, y={crop_y}, w={crop_width}, h={crop_height}), utilisation de la surface complète")
+            cropped_surface = temp_surface.copy()
+        else:
+            # Extraire la région à zoomer
+            crop_rect = pygame.Rect(crop_x, crop_y, crop_width, crop_height)
+            cropped_surface = temp_surface.subsurface(crop_rect).copy()
+            
+            # Debug pour vérifier que le prince est dans la zone crop
+            if self.prince_protection.state == "zoom_on_prince" and self.prince_protection.state_timer % 30 == 0:
+                print(f"Zoom Debug - Prince screen: ({prince_screen_x:.1f}, {prince_screen_y:.1f}), Crop: ({crop_x}, {crop_y}, {crop_width}, {crop_height})")
+                prince_in_crop = (prince_screen_x >= crop_x and prince_screen_x < crop_x + crop_width and
+                                prince_screen_y >= crop_y and prince_screen_y < crop_y + crop_height)
+                print(f"Prince dans zone crop: {prince_in_crop}")
+        
         # Redimensionner et dessiner sur l'écran principal
         zoomed_surface = pygame.transform.scale(
             cropped_surface, (self.screen_width, self.screen_height)

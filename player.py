@@ -338,7 +338,7 @@ class Player:
             if self.health <= 0:
                 self.die()
                 
-                if random.random() < 0.65:
+                if random.random() < 0.1:
                     manDyingSound = pygame.mixer.Sound("./assets/sounds/manDying.wav")
                     manDyingSound.play()
                 else:

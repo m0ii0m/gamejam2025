@@ -31,7 +31,6 @@ class Game:
 
         # États du jeu
         self.game_state = "start_menu"
-        self.game_state = "start_menu"
         
         # Initialisation des scènes
         self.throne = ThroneScene(self.screen)
@@ -65,13 +64,9 @@ class Game:
         self.game_state = "start_menu"
 
     def start_game_function(self):
-        
         from src.scenes.intro import IntroScene
-        # self.intro_scene = IntroScene(self)
-        # self.game_state = "intro"
-        self.level2 = Level2(self.screen)
-        self.init_level2()
-        self.game_state = "level2"
+        self.intro_scene = IntroScene(self)
+        self.game_state = "intro"
 
     def show_credits_function(self):
         self.game_state = "credits"
@@ -121,20 +116,11 @@ class Game:
             self.setup_throne_music()
             self.throne_music_started = True
 
-        # possibilité de skip (Enter/Espace)
-        for event in events:
-            if event.type == pygame.KEYDOWN and event.key in (
-                pygame.K_RETURN,
-                pygame.K_SPACE,
-            ):
-                self.game_state = "level1"
-                break
-
         # Update cinematic
         self.throne.update()
         # Passage automatique au niveau 1 quand la cinématique est terminée
         if getattr(self.throne, "cinematic_phase", None) == "done":
-            self.game_state = "level1"
+            self.game_state = "start_menu"
 
     def draw_throne(self):
         # La scène gère son propre rendu

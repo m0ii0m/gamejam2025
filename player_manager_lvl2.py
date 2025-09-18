@@ -89,11 +89,18 @@ class PlayerManager2:
             self.whip_sound = None
         
         
-        # Agrandir la touche E (ex: 1.5x)
-        key_e_raw = pygame.image.load("assets/images/sprites/key/e1.png").convert_alpha()
+        # Agrandir les touches E1 et E2 pour l'alternance (ex: 1.5x)
+        key_e1_raw = pygame.image.load("assets/images/sprites/key/e1.png").convert_alpha()
+        key_e2_raw = pygame.image.load("assets/images/sprites/key/e2.png").convert_alpha()
         scale_factor = 1.3
-        new_size = (int(key_e_raw.get_width() * scale_factor), int(key_e_raw.get_height() * scale_factor))
-        self.key_e_img = pygame.transform.scale(key_e_raw, new_size)
+        new_size = (int(key_e1_raw.get_width() * scale_factor), int(key_e1_raw.get_height() * scale_factor))
+        self.key_e1_img = pygame.transform.scale(key_e1_raw, new_size)
+        self.key_e2_img = pygame.transform.scale(key_e2_raw, new_size)
+        
+        # Variables pour l'alternance des images E
+        self.e_animation_timer = 0
+        self.e_animation_speed = 6  # Changer toutes les 6 frames (0.1 secondes à 60 FPS) - Plus rapide !
+        self.current_e_frame = 0  # 0 = e1.png, 1 = e2.png
         
     def update(self, keys, collision_tiles):
         if not self.campfire_sound_playing:
@@ -135,6 +142,12 @@ class PlayerManager2:
             self.horse_timer -= 1
             if keys[pygame.K_e]:
                 self.horse_score += 1
+                
+            # Mettre à jour l'animation d'alternance E1/E2
+            self.e_animation_timer += 1
+            if self.e_animation_timer >= self.e_animation_speed:
+                self.e_animation_timer = 0
+                self.current_e_frame = (self.current_e_frame + 1) % 2  # Alterner entre 0 et 1
 
         if not self.horse_game_over and self.horse_timer<=0:
             self.horse_game_over = True
@@ -203,7 +216,8 @@ class PlayerManager2:
             body.draw(screen, camera_x, camera_y)
         
         if self.horse_game_triggered and not self.horse_game_over:
-            img = self.key_e_img
+            # Alterner entre e1.png et e2.png
+            img = self.key_e1_img if self.current_e_frame == 0 else self.key_e2_img
             pos = (self.horse_x-img.get_width()//2 + 30, self.initial_spawn_y - 30)
             screen.blit(img, pos)
         

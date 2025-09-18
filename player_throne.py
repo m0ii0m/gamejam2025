@@ -255,9 +255,15 @@ class PlayerThrone:
                     self.rect.top = tile_rect.bottom
                     self.velocity_y = 0
         
-        # Limites de l'écran (ne pas sortir à gauche)
+        # Limites de la map (empêcher le joueur de sortir des bordures)
+        # Limite gauche
         if self.rect.left < 0:
             self.rect.left = 0
+        
+        # Limite droite : largeur totale de la map = 100 tiles × 16 pixels × 2.5 scale = 4000 pixels
+        map_width_pixels = 100 * 16 * 2.5  # 4000 pixels
+        if self.rect.right > map_width_pixels:
+            self.rect.right = map_width_pixels
     
     def update_animation(self):
         """Met à jour l'animation"""

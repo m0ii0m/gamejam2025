@@ -713,14 +713,14 @@ class PrinceProtectionManager:
             
     def update_protection_phase(self, collision_tiles=None, keys=None):
         """Met à jour la phase de protection simplifiée"""
-        # Spawner un soldat protecteur quand on appuie sur espace
-        if keys and keys[pygame.K_SPACE]:
+        # Spawner un soldat protecteur quand on appuie sur n'importe quelle touche
+        if keys and any(keys):
             # Éviter de spawner trop de soldats d'un coup
-            if not hasattr(self, 'space_was_pressed') or not self.space_was_pressed:
+            if not hasattr(self, 'key_was_pressed') or not self.key_was_pressed:
                 self.spawn_protector_soldier()
-            self.space_was_pressed = True
+            self.key_was_pressed = True
         else:
-            self.space_was_pressed = False
+            self.key_was_pressed = False
             
         # Mettre à jour les soldats protecteurs
         for soldier in self.protector_soldiers[:]:

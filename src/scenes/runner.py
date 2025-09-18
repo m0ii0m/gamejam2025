@@ -1,7 +1,7 @@
 import math
 import random
 import pygame as pg
-from core import Scene, WIDTH, HEIGHT, GRAVITY, GRAY, BLUE, WHITE, GREEN, RED, YELLOW, draw_multiline_center, draw_text_center
+from ..core import Scene, WIDTH, HEIGHT, GRAVITY, GRAY, BLUE, WHITE, GREEN, RED, YELLOW, draw_multiline_center, draw_text_center
 
 class RunnerScene(Scene):
     def __init__(self, game):

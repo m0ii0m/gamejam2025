@@ -16,6 +16,7 @@ from levels_utils import (
     draw_background_tilemap,
 )
 from start_menu import StartMenu
+from src.scenes.intro import IntroScene
 from prince_protection_manager import PrinceProtectionManager
 from credits import Credits
 
@@ -63,10 +64,14 @@ class Game:
         self.game_state = "start_menu"
 
     def start_game_function(self):
-        # self.init_level2()
-        # self.game_state = "level2"
+        
+        from src.scenes.intro import IntroScene
+        # self.intro_scene = IntroScene(self)
+        # self.game_state = "intro"
         self.init_level1()
         self.game_state = "level1"
+        # self.init_level2()
+        # self.game_state = "level2"
 
     def show_credits_function(self):
         self.game_state = "credits"
@@ -83,6 +88,15 @@ class Game:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+
+        if self.game_state == "intro":
+            for event in events:
+                self.intro_scene.handle_event(event)
+            self.intro_scene.draw(self.screen)
+            
+            if self.intro_scene.is_finished():  
+                self.init_level1()
+                self.game_state = "level1"
 
         if self.game_state == "start_menu":
             self.start_menu.update()

@@ -1,5 +1,6 @@
 import pygame
 import xml.etree.ElementTree as ET
+from levels_utils import parse_tile_id, apply_tile_transformations
 
 
 # TMX GID flip flags
@@ -205,28 +206,18 @@ class ThroneScene:
 	def _blit_tile(self, surface, gid_with_flags, screen_x, screen_y):
 		if gid_with_flags == 0:
 			return
-		flags = gid_with_flags & (FLIP_H | FLIP_V | FLIP_D)
-		gid = gid_with_flags & GID_MASK
-		base = self.tiles.get(gid)
-		if base is None:
+
+		# Extract tile ID and transformation flags
+		tile_id, flip_h, flip_v, flip_d = parse_tile_id(gid_with_flags)
+		base_tile = self.tiles.get(tile_id)
+		if base_tile is None:
 			return
-		img = base
-		if flags:
-			h = bool(flags & FLIP_H)
-			v = bool(flags & FLIP_V)
-			d = bool(flags & FLIP_D)
-			if d:
-				img = pygame.transform.rotate(img, 90)
-				if h and v:
-					pass
-				elif h:
-					img = pygame.transform.flip(img, False, True)
-				elif v:
-					img = pygame.transform.flip(img, True, False)
-			else:
-				if h or v:
-					img = pygame.transform.flip(img, h, v)
-		surface.blit(img, (screen_x, screen_y))
+
+		# Apply transformations to the tile
+		transformed_tile = apply_tile_transformations(base_tile, flip_h, flip_v, flip_d)
+
+		# Blit the transformed tile onto the surface
+		surface.blit(transformed_tile, (screen_x, screen_y))
 
 	# ---------- Draw ----------
 	def draw(self, screen):

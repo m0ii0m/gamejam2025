@@ -25,10 +25,10 @@ class StartMenu:
         self.title_shadow_text = self.title_font.render("Plot Armor", True, (98, 10, 10))
 
         # Data
-        title_margin = 150
+        title_margin = 175
         btn_count = 3
-        btn_size = (600, 150)
-        btn_gap = 50
+        btn_size = (450, 100) 
+        btn_gap = 40
         btn_text_color = (142, 78, 99)
         btn_labels = ["Start", "Credits", "Quit"]
         btn_callbacks = ["start", "credits", "quit"]
@@ -44,7 +44,7 @@ class StartMenu:
         # Set title position
         screen_width_center = self.screen_width // 2
         screen_height_center = self.screen_height // 2
-        title_position = screen_height_center - container_height // 2 + self.title_rect.height // 2
+        title_position = screen_height_center - container_height // 2 + self.title_rect.height // 2 + 50  # Décalé vers le bas
         self.title_rect.center = (screen_width_center, title_position)
         self.title_shadow_rect = self.title_shadow_text.get_rect().move(self.title_rect.x + 10, self.title_rect.y + 10)
         container_offset = title_position + title_margin 

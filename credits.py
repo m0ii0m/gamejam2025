@@ -7,25 +7,29 @@ class Credits:
         self.return_callback = return_callback
         self.background = background
 
-        self.title_font = pygame.font.Font("./assets/fonts/Bahiana-Regular.ttf", 64)
-        self.text_font = pygame.font.Font("./assets/fonts/Bahiana-Regular.ttf", 48)
+        self.title_font = pygame.font.Font("./assets/fonts/Bahiana-Regular.ttf", 56)  # Réduit de 64 à 56
+        self.text_font = pygame.font.Font("./assets/fonts/Bahiana-Regular.ttf", 36)   # Réduit de 48 à 36
+        self.header_font = pygame.font.Font("./assets/fonts/Bahiana-Regular.ttf", 42) # Nouvelle police pour les titres de section
 
         self.credits_lines = [
-            "Game by: Chazelle Etienne, Constant Théo, Graveleau Louidji, Leveque Lucas, Régnier Ludovic",
-            "For: GameJam ESIEE 2025 edition",
-            "Sprites: ...",
-            "Music and sounds: ...",
+            ["Game by", "Chazelle Etienne", "Constant Théo", "Graveleau Louidji", "Leveque Lucas", "Régnier Ludovic"],
+            ["Sprites", "Onfe", "LuizMelo", "aamatniekss"],
+            ["Music and sounds", "Pixabay", "orangefreesounds"],
         ]
 
-        self.credits_texts = [
-            self.text_font.render(line, True, (168, 11, 11))
-            for line in self.credits_lines
-        ]
-
-        self.credits_texts_shadow = [
-            self.text_font.render(line, True, (98, 10, 10))
-            for line in self.credits_lines
-        ]
+        # Créer les surfaces pour chaque ligne individuellement
+        self.credits_texts = []
+        
+        for section in self.credits_lines:
+            section_texts = []
+            for i, line in enumerate(section):
+                if i == 0:  # Premier élément = titre de section
+                    # Couleur rouge foncé pour les titres
+                    section_texts.append(self.header_font.render(line, True, (139, 0, 0)))  # Rouge foncé
+                else:  # Autres éléments = texte normal
+                    # Couleur rouge pour le texte normal
+                    section_texts.append(self.text_font.render(line, True, (168, 11, 11)))
+            self.credits_texts.append(section_texts)
 
     def update(self):
         keys = pygame.key.get_pressed()
@@ -46,12 +50,17 @@ class Credits:
         surface.blit(title_surf_shadow, title_rect_shadow)
         surface.blit(title_surf, title_rect)
 
-        # Credits text with shadow
-        for i, text_surf in enumerate(self.credits_texts_shadow):
-            rect = text_surf.get_rect(
-                center=(self.screen_size[0] // 2 + 2, 2 + 150 + i * 40)
-            )
-            surface.blit(text_surf, rect)
-        for i, text_surf in enumerate(self.credits_texts):
-            rect = text_surf.get_rect(center=(self.screen_size[0] // 2, 150 + i * 40))
-            surface.blit(text_surf, rect)
+        # Credits text sans ombres
+        y_position = 140  # Commencer un peu plus haut
+        line_spacing = 35  # Réduit de 50 à 35
+        section_spacing = 50  # Réduit de 80 à 50
+        
+        for section_index, section_texts in enumerate(self.credits_texts):
+            # Afficher les textes de cette section
+            for line_index, text_surf in enumerate(section_texts):
+                rect = text_surf.get_rect(center=(self.screen_size[0] // 2, y_position))
+                surface.blit(text_surf, rect)
+                y_position += line_spacing
+            
+            # Ajouter un espacement supplémentaire entre les sections
+            y_position += section_spacing

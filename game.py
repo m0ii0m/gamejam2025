@@ -31,6 +31,7 @@ class Game:
 
         # États du jeu
         self.game_state = "start_menu"
+        self.game_state = "start_menu"
         
         # Initialisation des scènes
         self.throne = ThroneScene(self.screen)
@@ -66,12 +67,8 @@ class Game:
     def start_game_function(self):
         
         from src.scenes.intro import IntroScene
-        # self.intro_scene = IntroScene(self)
-        # self.game_state = "intro"
-        #self.init_level1()
-        #self.game_state = "level1"
-        self.init_level2()
-        self.game_state = "level2"
+        self.intro_scene = IntroScene(self)
+        self.game_state = "intro"
 
     def show_credits_function(self):
         self.game_state = "credits"

@@ -15,12 +15,17 @@ class IntroScene(Scene):
 
 
         self.lines = [
-            "Deux royaumes en guerre...",
-            "Le roi est mort. Le prince est loin, chez l'ennemi.",
-            "Un messager doit atteindre le château pour prévenir le prince.",
+            "Notre pays est en guerre, et le roi vient de mourir.",
+            "Le prince, dernier espoir du royaume, doit être prévenu.",
+            "Un messager courageux part alors accomplir sa mission :",
+            "",
+            "Avertir le prince, actuellement assiégé dans son château.",
+            "",
             "",
             "Appuyez sur ENTER pour commencer (Niveau 1)",
         ]
+
+        #   
 
         self.finished = False
         self.displayed_text = [""] * len(self.lines)

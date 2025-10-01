@@ -1,6 +1,6 @@
-# Game Jam 2025 — Mini guide
+# Plot Armor — Game Jam 2025
 
-Ce projet utilise Python et Pygame.
+Ce projet utilise Python + Pygame.
 
 ## Prérequis
 - Python 3.10+ installé et disponible dans votre `PATH` (Windows).
@@ -27,34 +27,33 @@ pip install -r requirements.txt
 Toujours depuis la racine du repo:
 ```bash
 # (Assurez-vous que l'environnement est activé)
-python src/main.py
+python main.py
 ```
 
 ## Commandes
 - Global:
-  - `ENTER`: passer les écrans d'intro/transition
-  - `ESC`: quitter
-  - `R`: recommencer lors d'un échec
+  - `ENTER`: passer les textes de l'histoire
 
 - Niveau 1 — Mini-jeu 1 (Messager coureur):
-  - `ESPACE` ou `Flèche Haut` ou `W`: sauter
-  - Objectif: éviter les obstacles et atteindre le château (barre de progression en haut).
+  - `ZQSD` ou Flèches directionnelles: déplacer le messager
+  - Objectif: éviter les flèches et atteindre le château.
 
 - Niveau 1 — Mini-jeu 2 (Défense du prince):
-  - `Flèche Gauche/Droite` ou `A/D`: déplacer le garde en haut
-  - `ESPACE`: déposer une caisse (elle tombe et bloque des flèches)
-  - Objectif: empêcher les flèches d'atteindre le prince pendant le chrono.
+  - `ESPACE`: faire apparaître des soldats pour protéger le prince
+  - Objectif: empêcher les flèches d'atteindre le prince pendant qu'il se déplace.
+
+- Niveau 2 — Mini-jeu 1 (QTE):
+  - `Q/D` ou Flèches Gauche/Droite: réussir les QTE
+  - Objectif: compléter les séquences pour progresser (ou non ><).
+
+- Niveau 2 — Mini-jeu 2 (Libération du cheval):
+  - `E`: spammer pour libérer le cheval
+
+- Niveau 2 — Mini-jeu 3 (Cheval):
+  - `ZQSD` ou Flèches directionnelles: déplacer le cheval
+  - Objectif: guider le cheval jusqu'au château.
 
 ## Dépannage rapide
 - Si `python` n'est pas reconnu, essayez `py -3` ou vérifiez l'installation de Python.
 - Si l'activation échoue, vérifiez le chemin: `source .venv/Scripts/activate` (Bash Windows) ou `.venv\Scripts\activate` dans `cmd.exe`/PowerShell.
 - Pygame nécessite parfois des composants système (DirectX/SDL). Mettez à jour vos pilotes graphiques si vous rencontrez des erreurs d'initialisation.
-
-## Arborescence
-```
-assets/
-  fonts/ images/ sounds/
-src/
-  main.py
-requirements.txt
-```
